@@ -1,0 +1,19 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(jogador, "Jogador", "Usuário que joga partidas, edita perfil e vê rankings")
+
+System(location404, "Location404", "Sistema de jogo de adivinhação de localização")
+
+System(googleOAuth, "Google OAuth", "Autenticação externa via conta Google")
+System(facebookOAuth, "Facebook OAuth", "Autenticação externa via conta Facebook")
+System(apiMapas, "APIs de Mapas", "Google Maps / OpenStreetMap")
+System(emailService, "Serviço de E-mail", "Envio de e-mails de recuperação de senha")
+
+Rel(jogador, location404, "Joga e interage com")
+
+Rel(location404, googleOAuth, "Autentica usuários via")
+Rel(location404, facebookOAuth, "Autentica usuários via")
+Rel(location404, apiMapas, "Utiliza dados geográficos de")
+Rel(location404, emailService, "Envia notificações via")
+@enduml

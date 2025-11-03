@@ -1,0 +1,376 @@
+version: '3.8'
+
+# ============================================================================
+# DOCKER COMPOSE SIMPLIFICADO PARA TESTE LOCAL
+# Usa portas diretas (sem Traefik) para facilitar testes
+# ============================================================================
+
+networks:
+  location404:
+    driver: bridge
+
+services:
+  # ==========================================================================
+  # GAME ENGINE - SignalR (1 réplica para teste)
+  # ==========================================================================
+  location404-game:
+    build:
+      context: ./location404-game
+      dockerfile: Dockerfile
+
+    container_name: location404-game
+    restart: unless-stopped
+
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - Redis__Enabled=true
+      - Redis__ConnectionString=dragonfly:6379,abortConnect=false
+      - RabbitMQ__Enabled=true
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=${RABBITMQ_PORT:-5672}
+      - RabbitMQ__UserName=location404
+      - RabbitMQ__Password=location404
+      - Location404Data__BaseUrl=http://location404-data:8080
+      - OpenTelemetry__ServiceName=location404-game
+      - OpenTelemetry__ServiceVersion=1.0.0
+      - OpenTelemetry__CollectorEndpoint=http://tempo:4317
+      - OpenTelemetry__Tracing__Enabled=true
+      - OpenTelemetry__Metrics__Enabled=true
+      - Cors__AllowedOrigins=http://localhost:3400,http://localhost:5173
+
+    ports:
+      - "5170:8080"
+
+    networks:
+      - location404
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================================================
+  # MIGRATION - Auth Database
+  # ==========================================================================
+  auth-migration:
+    build:
+      context: ./location404-auth
+      dockerfile: Dockerfile
+
+    container_name: location404-auth-migration
+
+    command: >
+      sh -c "dotnet ef database update --no-build --project /app"
+
+    environment:
+      - ConnectionStrings__UserIdentityDatabaseDevelopment=Host=postgres-auth;Port=5432;Database=location404-auth;Username=location404;Password=location404
+
+    networks:
+      - location404
+
+    depends_on:
+      postgres-auth:
+        condition: service_healthy
+
+  # ==========================================================================
+  # MIGRATION - Data Database
+  # ==========================================================================
+  data-migration:
+    build:
+      context: ./location404-data
+      dockerfile: Dockerfile
+
+    container_name: location404-data-migration
+
+    command: >
+      sh -c "dotnet ef database update --no-build --project /app"
+
+    environment:
+      - ConnectionStrings__GeoDataDatabase=Host=postgres-data;Port=5432;Database=location404-data;Username=location404;Password=location404
+
+    networks:
+      - location404
+
+    depends_on:
+      postgres-data:
+        condition: service_healthy
+
+  # ==========================================================================
+  # AUTH SERVICE - Authentication (1 réplica)
+  # ==========================================================================
+  location404-auth:
+    build:
+      context: ./location404-auth
+      dockerfile: Dockerfile
+
+    container_name: location404-auth
+    restart: unless-stopped
+
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__UserIdentityDatabaseDevelopment=Host=postgres-auth;Port=5432;Database=location404-auth;Username=location404;Password=location404
+      - JwtSettings__Issuer=location404
+      - JwtSettings__Audience=location404
+      - JwtSettings__SigningKey=${JWT_SIGNING_KEY}
+      - JwtSettings__AccessTokenMinutes=60
+      - JwtSettings__RefreshTokenMinutes=10080
+      - OpenTelemetry__ServiceName=location404-auth
+      - OpenTelemetry__ServiceVersion=1.0.0
+      - OpenTelemetry__CollectorEndpoint=http://tempo:4317
+      - OpenTelemetry__Tracing__Enabled=true
+      - OpenTelemetry__Metrics__Enabled=true
+      - Cors__AllowedOrigins=http://localhost:3400,http://localhost:5173
+
+    ports:
+      - "5185:8080"
+
+    networks:
+      - location404
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    depends_on:
+      auth-migration:
+        condition: service_completed_successfully
+
+  # ==========================================================================
+  # DATA SERVICE - Locations & Stats (1 réplica)
+  # ==========================================================================
+  location404-data:
+    build:
+      context: ./location404-data
+      dockerfile: Dockerfile
+
+    container_name: location404-data
+    restart: unless-stopped
+
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__GeoDataDatabase=Host=postgres-data;Port=5432;Database=location404-data;Username=location404;Password=location404
+      - RabbitMQ__Enabled=false
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=${RABBITMQ_PORT:-5672}
+      - RabbitMQ__UserName=location404
+      - RabbitMQ__Password=location404
+      - RabbitMQ__MatchEndedQueue=match-ended
+      - OpenTelemetry__ServiceName=location404-data
+      - OpenTelemetry__ServiceVersion=1.0.0
+      - OpenTelemetry__CollectorEndpoint=http://tempo:4317
+      - OpenTelemetry__Tracing__Enabled=true
+      - OpenTelemetry__Metrics__Enabled=true
+      - Cors__AllowedOrigins=http://localhost:3400,http://localhost:5173
+
+    ports:
+      - "5000:8080"
+
+    networks:
+      - location404
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    depends_on:
+      data-migration:
+        condition: service_completed_successfully
+
+  # ==========================================================================
+  # FRONTEND - Vue 3 (1 réplica)
+  # ==========================================================================
+  location404-web:
+    build:
+      context: ./location404-web
+      dockerfile: Dockerfile
+      args:
+        VITE_AUTH_API: http://localhost:5185
+        VITE_GAME_API: http://localhost:5170
+        VITE_DATA_API: http://localhost:5000
+        VITE_GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+
+    container_name: location404-web
+    restart: unless-stopped
+
+    ports:
+      - "3400:3400"
+
+    networks:
+      - location404
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3400"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================================================
+  # INFRASTRUCTURE - PostgreSQL (Auth Database)
+  # ==========================================================================
+  postgres-auth:
+    image: postgres:16-alpine
+    container_name: location404-postgres-auth
+    restart: unless-stopped
+
+    environment:
+      - POSTGRES_DB=location404-auth
+      - POSTGRES_USER=location404
+      - POSTGRES_PASSWORD=location404
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres-auth-data:/var/lib/postgresql/data
+
+    networks:
+      - location404
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U location404 -d location404-auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================================================
+  # INFRASTRUCTURE - PostgreSQL (Data Database)
+  # ==========================================================================
+  postgres-data:
+    image: postgres:16-alpine
+    container_name: location404-postgres-data
+    restart: unless-stopped
+
+    environment:
+      - POSTGRES_DB=location404-data
+      - POSTGRES_USER=location404
+      - POSTGRES_PASSWORD=location404
+
+    ports:
+      - "5434:5432"
+
+    volumes:
+      - postgres-data-data:/var/lib/postgresql/data
+
+    networks:
+      - location404
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U location404 -d location404-data"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================================================
+  # INFRASTRUCTURE - Dragonfly (Redis-compatible Cache & Queue)
+  # ==========================================================================
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    container_name: location404-dragonfly
+    restart: unless-stopped
+
+    ulimits:
+      memlock: -1
+
+    ports:
+      - "6379:6379"
+
+    networks:
+      - location404
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ==========================================================================
+  # INFRASTRUCTURE - RabbitMQ (Message Queue)
+  # ==========================================================================
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: location404-rabbitmq
+    restart: unless-stopped
+
+    environment:
+      - RABBITMQ_DEFAULT_USER=location404
+      - RABBITMQ_DEFAULT_PASS=location404
+
+    ports:
+      - "5672:5672"   # AMQP
+      - "15672:15672" # Management UI
+
+    networks:
+      - location404
+
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ==========================================================================
+  # OBSERVABILITY - Grafana Tempo (Distributed Tracing)
+  # ==========================================================================
+  tempo:
+    image: grafana/tempo:latest
+    container_name: location404-tempo
+    restart: unless-stopped
+
+    command: ["-config.file=/etc/tempo.yaml"]
+
+    volumes:
+      - ./observability/tempo.yaml:/etc/tempo.yaml
+      - tempo-data:/tmp/tempo
+
+    ports:
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
+
+    networks:
+      - location404
+
+  # ==========================================================================
+  # OBSERVABILITY - Grafana (Visualization)
+  # ==========================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: location404-grafana
+    restart: unless-stopped
+
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-location404}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+    ports:
+      - "3000:3000"
+
+    networks:
+      - location404
+
+    depends_on:
+      - tempo
+
+volumes:
+  postgres-auth-data:
+  postgres-data-data:
+  tempo-data:
+  grafana-data:

@@ -1,0 +1,58 @@
+@startuml
+top to bottom direction
+
+actor "Jogador Principal" as jogador
+actor "Jogador (Convidado)" as amigo
+
+rectangle "Sistema Location404" {
+  package "Interações Iniciais" {
+    usecase "Selecionar Modo de Jogo" as selecionar_modo
+    usecase "Convidar Amigo" as convidar_amigo
+    usecase "Aceitar Convite" as aceitar_convite
+    usecase "Recusar Convite" as recusar_convite
+  }
+
+  package "Fluxo da Partida" {
+    usecase "Iniciar Partida" as iniciar_partida
+    usecase "Jogar Rodada" as jogar_rodada
+    usecase "Exibir Localização" as exibir_localizacao
+    usecase "Interagir com o Mapa" as interagir_mapa
+    usecase "Enviar Palpite" as enviar_palpite
+    usecase "Exibir Resultado da Rodada" as exibir_resultado_rodada
+  }
+
+  package "Resultados e Estatísticas" {
+    usecase "Calcular Pontuação" as calcular_pontuacao
+    usecase "Exibir Resultado Final da Partida" as exibir_resultado_final
+    usecase "Visualizar Estatísticas Finais" as visualizar_estatisticas_finais
+    usecase "Criar Partida com Localização Aleatória" as criar_partida
+    usecase "Gerar Resultado Final" as gerar_resultado
+    usecase "Gravar Estatísticas" as gravar_estatisticas
+  }
+}
+
+jogador --> selecionar_modo
+jogador --> convidar_amigo
+
+convidar_amigo --> aceitar_convite
+convidar_amigo --> recusar_convite
+amigo --> aceitar_convite
+amigo --> recusar_convite
+
+aceitar_convite --> iniciar_partida
+iniciar_partida --> criar_partida
+
+selecionar_modo ..> convidar_amigo : "<<include>>\n[modo multiplayer]"
+recusar_convite ..> selecionar_modo : "<<extend>>"
+iniciar_partida ..> jogar_rodada : "<<include>>"
+jogar_rodada ..> exibir_localizacao : "<<include>>"
+jogar_rodada ..> interagir_mapa : "<<include>>"
+jogar_rodada ..> enviar_palpite : "<<include>>"
+jogar_rodada ..> exibir_resultado_rodada : "<<include>>"
+exibir_resultado_final ..> visualizar_estatisticas_finais : "<<extend>>"
+gerar_resultado ..> exibir_resultado_final : "<<include>>"
+
+enviar_palpite --> calcular_pontuacao
+iniciar_partida --> gerar_resultado
+gerar_resultado --> gravar_estatisticas
+@enduml

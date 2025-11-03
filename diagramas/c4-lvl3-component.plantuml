@@ -1,0 +1,104 @@
+@startuml Location404-C4-Level3-Components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Location404 - Diagrama C4 Nível 3 (Componentes)
+
+Person(user, "Jogador", "Usuário da plataforma Location404")
+System_Ext(google_maps, "Google Maps API", "Fornece Street View e dados geográficos")
+System_Ext(oauth_google, "Google OAuth", "Serviço de autenticação (futuro)")
+
+Container_Boundary(web_app, "location404-web") {
+    Component(vue_router, "Vue Router", "Vue 3", "Gerenciamento de rotas SPA")
+    Component(pinia_store, "Pinia Store", "Vue 3 + persistedstate", "Gerenciamento de estado global (auth)")
+    Component(google_maps_loader, "Google Maps Loader", "JavaScript", "Carregamento dinâmico do SDK do Google Maps")
+    Component(axios_client, "Axios HTTP Client", "Axios 1.12", "Cliente HTTP com interceptors para APIs REST")
+    Component(signalr_client, "SignalR Client", "@microsoft/signalr 9.0", "Cliente WebSocket para comunicação em tempo real")
+    Component(auth_service, "UserIdentityService", "TypeScript", "Serviço de autenticação (login, registro, perfil)")
+    Component(game_service, "GameEngineService", "TypeScript", "Serviço de jogo (matchmaking, palpites via SignalR)")
+    Component(geodata_service, "GeoDataService", "TypeScript", "Serviço de dados geográficos (localizações, rankings)")
+}
+
+Container_Boundary(user_identity, "location404-auth") {
+    Component(auth_endpoints, "Auth Endpoints", "ASP.NET Core", "/auth/login, /auth/refresh")
+    Component(user_endpoints, "User Endpoints", "ASP.NET Core", "/users (POST, GET, PATCH)")
+    Component(jwt_handler, "JWT Handler", "System.IdentityModel.Tokens.Jwt", "Geração e validação de tokens JWT (HS256, 15min)")
+    Component(bcrypt_hasher, "BCrypt Hasher", "BCrypt.Net-Next 4.0", "Hashing de senhas com salt (work factor 10)")
+    Component(auth_commands, "Auth Commands", "LiteBus", "Login, Register, RefreshToken (mediator pattern)")
+    Component(user_repository, "User Repository", "EF Core 9.0", "Acesso a dados de usuários e refresh tokens")
+}
+
+Container_Boundary(game_core, "location404-game") {
+    Component(game_hub, "GameHub", "SignalR", "Métodos: JoinMatchmaking, LeaveMatchmaking, SubmitGuess, StartRound")
+    Component(match_manager, "MatchManager", "C#", "Gerenciamento CRUD de partidas (GameMatch, GameRound)")
+    Component(matchmaking_service, "MatchmakingService", "C#", "Fila FIFO via Redis SortedSet, criação de matches 1v1")
+    Component(score_calculator, "ScoreCalculator", "C#", "Haversine (distância) + decaimento exponencial (5000 × e^(-d/2000))")
+    Component(redis_manager, "RedisManager", "StackExchange.Redis 2.7", "Gerencia fila, partidas ativas, palpites, TTL 2h")
+    Component(rabbitmq_publisher, "RabbitMQPublisher", "RabbitMQ.Client 6.8", "Publica match.ended para exchange 'game-events'")
+    Component(http_client, "HttpClient", ".NET HttpClient", "GET /api/locations/random do location404-data")
+}
+
+Container_Boundary(geodata, "location404-data") {
+    Component(location_endpoints, "Location Endpoints", "ASP.NET Core", "/locations (GET all, GET random, POST, DELETE)")
+    Component(match_endpoints, "Match Endpoints", "ASP.NET Core", "/matches/{id}, /matches/player/{playerId}")
+    Component(player_endpoints, "Player Endpoints", "ASP.NET Core", "/players/{id}/stats, /players/ranking")
+    Component(location_service, "LocationService", "C#", "Seleção aleatória via ORDER BY RANDOM() LIMIT 1")
+    Component(match_service, "MatchService", "C#", "Persistência de GameMatch e GameRound recebidas do RabbitMQ")
+    Component(player_stats_service, "PlayerStatsService", "C#", "Atualização de stats: vitórias, pontos ELO (+25/-10/+5)")
+    Component(data_repository, "DataRepository", "EF Core 9.0", "Acesso a localizações, partidas, rodadas, PlayerStats")
+    Component(rabbitmq_consumer, "RabbitMQConsumer", "RabbitMQ.Client 6.8", "Consome 'match-ended' queue, processa eventos")
+    Component(data_seeder, "DataSeeder", "EF Core", "Seed de 60 localizações globais (São Paulo, Tokyo, Paris...)")
+}
+
+ContainerDb(postgresql_auth, "PostgreSQL (Auth)", "PostgreSQL 16", "users, refresh_tokens")
+ContainerDb(postgresql_data, "PostgreSQL (Data)", "PostgreSQL 16", "Locations (60), Matches, Rounds, PlayerStats")
+ContainerDb(dragonfly, "Dragonfly", "Redis-compatible cache", "matchmaking:queue, match:{id}, guess:{id}, TTL 2h")
+Container(rabbitmq, "RabbitMQ", "Message Broker", "Exchange: game-events (topic), Queue: match-ended")
+
+' Relacionamentos Web App
+Rel(user, vue_router, "Navega")
+Rel(vue_router, pinia_store, "Gerencia estado")
+Rel(auth_service, axios_client, "Usa para HTTP")
+Rel(game_service, signalr_client, "Usa para SignalR")
+Rel(geodata_service, axios_client, "Usa para HTTP")
+Rel(axios_client, auth_endpoints, "POST /auth/login")
+Rel(axios_client, location_endpoints, "GET /locations")
+Rel(axios_client, player_endpoints, "GET /players/ranking")
+Rel(signalr_client, game_hub, "JoinMatchmaking, SubmitGuess")
+Rel(google_maps_loader, google_maps, "Carrega Street View SDK")
+
+' Relacionamentos location404-auth
+Rel(auth_endpoints, auth_commands, "Despacha comandos")
+Rel(user_endpoints, auth_commands, "Despacha comandos")
+Rel(auth_commands, jwt_handler, "Gera/valida JWT")
+Rel(auth_commands, bcrypt_hasher, "Verifica hash")
+Rel(auth_commands, user_repository, "Lê/grava usuários")
+Rel(user_repository, postgresql_auth, "Persiste", "SQL/TCP")
+
+' Relacionamentos location404-game
+Rel(game_hub, matchmaking_service, "Adiciona jogador à fila")
+Rel(matchmaking_service, redis_manager, "ZADD matchmaking:queue")
+Rel(matchmaking_service, match_manager, "Cria GameMatch (2 players)")
+Rel(match_manager, redis_manager, "SET match:{id} JSON")
+Rel(game_hub, score_calculator, "Calcula pontos após ambos palpites")
+Rel(score_calculator, match_manager, "Atualiza pontuação")
+Rel(match_manager, rabbitmq_publisher, "Publica GameMatchEndedEvent")
+Rel(match_manager, http_client, "GET /api/locations/random")
+Rel(redis_manager, dragonfly, "Operações Redis", "Dragonfly Protocol")
+Rel(rabbitmq_publisher, rabbitmq, "Publica match.ended", "AMQP")
+Rel(http_client, location_endpoints, "Busca localização", "HTTP GET")
+
+' Relacionamentos location404-data
+Rel(rabbitmq_consumer, rabbitmq, "Consome match.ended", "AMQP")
+Rel(rabbitmq_consumer, match_service, "Persiste GameMatch")
+Rel(rabbitmq_consumer, player_stats_service, "Atualiza stats")
+Rel(location_endpoints, location_service, "Seleciona aleatória")
+Rel(match_endpoints, match_service, "Consulta histórico")
+Rel(player_endpoints, player_stats_service, "Calcula rankings")
+Rel(location_service, data_repository, "SELECT * FROM Locations WHERE IsActive ORDER BY RANDOM() LIMIT 1")
+Rel(match_service, data_repository, "INSERT Matches, Rounds")
+Rel(player_stats_service, data_repository, "UPDATE PlayerStats SET RankingPoints = RankingPoints + 25")
+Rel(data_repository, postgresql_data, "Persiste", "SQL/TCP")
+Rel(data_seeder, data_repository, "Seed inicial 60 localizações")
+
+SHOW_LEGEND()
+@enduml

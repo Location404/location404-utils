@@ -1,0 +1,47 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Location404 - Diagrama C4 Nível 2 (Contêineres)
+
+Person(jogador, "Jogador", "Usuário que joga partidas, edita perfil e vê rankings")
+
+System_Ext(googleOAuth, "Google OAuth", "Autenticação externa via conta Google")
+System_Ext(apiMapas, "Google Maps API", "Fornece Street View e dados geográficos")
+
+System_Boundary(location404, "Location404") {
+    Container(webApp, "Frontend", "Vue 3 + TypeScript", "Interface web responsiva SPA para interação com o jogo")
+
+    Container(authService, "location404-auth", ".NET 9 API", "Gerencia cadastro, login, autenticação JWT e perfis de usuário")
+
+    Container(gameEngine, "location404-game", ".NET 9 SignalR", "Gerencia matchmaking, lógica de jogo em tempo real e cálculo de pontuação via SignalR")
+
+    Container(dataService, "location404-data", ".NET 9 API", "Fornece localizações, estatísticas de jogadores e rankings. Consome eventos do RabbitMQ")
+
+    ContainerDb(authDb, "Auth Database", "PostgreSQL", "Armazena usuários, senhas hash (BCrypt) e refresh tokens")
+
+    ContainerDb(dataDb, "Data Database", "PostgreSQL", "Armazena 60 localizações, histórico de partidas, rodadas e estatísticas de jogadores")
+
+    ContainerDb(gameCache, "Game Cache", "Dragonfly", "Cache distribuído para fila de matchmaking, estado de partidas ativas e palpites temporários")
+
+    Container(messageBroker, "Message Broker", "RabbitMQ", "Event bus para comunicação assíncrona entre serviços (match.ended, round.ended)")
+}
+
+Rel(jogador, webApp, "Acessa via navegador", "HTTPS")
+
+Rel(webApp, authService, "Login, registro, atualização de perfil", "HTTPS/REST")
+Rel(webApp, gameEngine, "Matchmaking, submissão de palpites em tempo real", "SignalR WebSocket")
+Rel(webApp, dataService, "Consulta rankings, estatísticas e histórico", "HTTPS/REST")
+Rel(webApp, apiMapas, "Carrega Street View", "HTTPS")
+
+Rel(authService, authDb, "Lê/Grava usuários e tokens", "SQL/TCP")
+Rel(authService, googleOAuth, "Autentica via OAuth 2.0", "HTTPS")
+
+Rel(gameEngine, gameCache, "Gerencia fila de matchmaking e estado de partidas", "Dragonfly Protocol")
+Rel(gameEngine, dataService, "Busca localização aleatória para rodada", "HTTP GET")
+Rel(gameEngine, messageBroker, "Publica match.ended e round.ended", "AMQP")
+
+Rel(dataService, dataDb, "Lê localizações e grava partidas/stats", "SQL/TCP")
+Rel(messageBroker, dataService, "Entrega eventos match.ended", "AMQP")
+
+SHOW_LEGEND()
+@enduml
