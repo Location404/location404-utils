@@ -134,7 +134,7 @@ services:
   # FRONTEND - Vue 3 (Auto-scaling com Load Balancing)
   # ==========================================================================
   location404-web:
-    image: ${DOCKER_REGISTRY:-location404}/web:${VERSION:-latest}
+    image: ${DOCKER_REGISTRY:-ghcr.io/location404}/location404-web:${VERSION:-main}
     build:
       context: ../../location404-web
       dockerfile: Dockerfile
@@ -203,7 +203,7 @@ services:
   # GAME ENGINE - SignalR (Redis Backplane + Sticky Sessions)
   # ==========================================================================
   location404-game:
-    image: ${DOCKER_REGISTRY:-location404}/game:${VERSION:-latest}
+    image: ${DOCKER_REGISTRY:-ghcr.io/location404}/location404-game:${VERSION:-main}
     build:
       context: ../../location404-game
       dockerfile: Dockerfile
@@ -306,7 +306,7 @@ services:
   # AUTH SERVICE - JWT Authentication
   # ==========================================================================
   location404-auth:
-    image: ${DOCKER_REGISTRY:-location404}/auth:${VERSION:-latest}
+    image: ${DOCKER_REGISTRY:-ghcr.io/location404}/location404-auth:${VERSION:-main}
     build:
       context: ../../location404-auth
       dockerfile: Dockerfile
@@ -395,7 +395,7 @@ services:
   # DATA SERVICE - Locations & Stats
   # ==========================================================================
   location404-data:
-    image: ${DOCKER_REGISTRY:-location404}/data:${VERSION:-latest}
+    image: ${DOCKER_REGISTRY:-ghcr.io/location404}/location404-data:${VERSION:-main}
     build:
       context: ../../location404-data
       dockerfile: Dockerfile
