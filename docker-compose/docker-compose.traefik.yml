@@ -1,13 +1,19 @@
 version: '3.8'
 
 # ============================================================================
-# NETWORKS
+# NETWORKS (Swarm overlay networks)
 # ============================================================================
 networks:
   location404:
-    driver: bridge
+    driver: overlay
+    attachable: true
+    driver_opts:
+      encrypted: "true"
   traefik-public:
-    driver: bridge
+    driver: overlay
+    attachable: true
+    driver_opts:
+      encrypted: "true"
 
 # ============================================================================
 # VOLUMES
@@ -30,16 +36,15 @@ services:
   # ==========================================================================
   traefik:
     image: traefik:v3.0
-    container_name: location404-traefik
-    restart: unless-stopped
 
     command:
       # API & Dashboard
       - "--api.dashboard=true"
       - "--api.insecure=true"
 
-      # Docker Provider
+      # Docker Provider (Swarm Mode)
       - "--providers.docker=true"
+      - "--providers.docker.swarmMode=true"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=traefik-public"
 
@@ -81,12 +86,11 @@ services:
     ports:
       - "80:80"       # HTTP
       - "443:443"     # HTTPS
-      - "8080:8080"   # Traefik Dashboard
+      - "8888:8080"   # Traefik Dashboard (alterado de 8080)
 
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "traefik-certificates:/letsencrypt"
-      - "./traefik/logs:/var/log/traefik"
 
     networks:
       - traefik-public
@@ -107,21 +111,38 @@ services:
       retries: 3
       start_period: 10s
 
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
   # ==========================================================================
-  # FRONTEND - Vue 3 (2 réplicas)
+  # FRONTEND - Vue 3 (Auto-scaling com Load Balancing)
   # ==========================================================================
-  location404-web-1:
+  location404-web:
+    image: ${DOCKER_REGISTRY:-location404}/web:${VERSION:-latest}
     build:
-      context: ./location404-web
+      context: ../../location404-web
       dockerfile: Dockerfile
       args:
         VITE_AUTH_API: https://auth.${DOMAIN:-location404.local}
         VITE_GAME_API: https://game.${DOMAIN:-location404.local}
         VITE_DATA_API: https://data.${DOMAIN:-location404.local}
         VITE_GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
-
-    container_name: location404-web-1
-    restart: unless-stopped
 
     networks:
       - traefik-public
@@ -154,45 +175,38 @@ services:
       retries: 3
       start_period: 40s
 
-  location404-web-2:
-    build:
-      context: ./location404-web
-      dockerfile: Dockerfile
-      args:
-        VITE_AUTH_API: https://auth.${DOMAIN:-location404.local}
-        VITE_GAME_API: https://game.${DOMAIN:-location404.local}
-        VITE_DATA_API: https://data.${DOMAIN:-location404.local}
-        VITE_GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
-
-    container_name: location404-web-2
-    restart: unless-stopped
-
-    networks:
-      - traefik-public
-      - location404
-
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik-public"
-      - "traefik.http.services.web.loadbalancer.server.port=3400"
-
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3400"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+    deploy:
+      mode: replicated
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
   # ==========================================================================
-  # GAME ENGINE - SignalR (2 réplicas com Redis Backplane + Sticky Sessions)
+  # GAME ENGINE - SignalR (Redis Backplane + Sticky Sessions)
   # ==========================================================================
-  location404-game-1:
+  location404-game:
+    image: ${DOCKER_REGISTRY:-location404}/game:${VERSION:-latest}
     build:
-      context: ./location404-game
+      context: ../../location404-game
       dockerfile: Dockerfile
-
-    container_name: location404-game-1
-    restart: unless-stopped
 
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -210,7 +224,7 @@ services:
       - RabbitMQ__Password=${RABBITMQ_PASSWORD:-guest}
 
       # Location404 Data API
-      - Location404Data__BaseUrl=http://location404-data-1:8080
+      - Location404Data__BaseUrl=http://location404-data:8080
 
       # OpenTelemetry
       - OpenTelemetry__ServiceName=location404-game
@@ -264,63 +278,38 @@ services:
     depends_on:
       - tempo
 
-  location404-game-2:
-    build:
-      context: ./location404-game
-      dockerfile: Dockerfile
-
-    container_name: location404-game-2
-    restart: unless-stopped
-
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8080
-      - Redis__Enabled=true
-      - Redis__ConnectionString=${REDIS_CONNECTION_STRING}
-      - RabbitMQ__Enabled=true
-      - RabbitMQ__HostName=${RABBITMQ_HOST}
-      - RabbitMQ__Port=${RABBITMQ_PORT:-5672}
-      - RabbitMQ__UserName=${RABBITMQ_USER:-guest}
-      - RabbitMQ__Password=${RABBITMQ_PASSWORD:-guest}
-      - Location404Data__BaseUrl=http://location404-data-1:8080
-      - OpenTelemetry__ServiceName=location404-game
-      - OpenTelemetry__ServiceVersion=1.0.0
-      - OpenTelemetry__ServiceNamespace=location404
-      - OpenTelemetry__CollectorEndpoint=http://tempo:4317
-      - OpenTelemetry__Tracing__Enabled=true
-      - OpenTelemetry__Tracing__SamplingRatio=1.0
-      - OpenTelemetry__Metrics__Enabled=true
-      - OpenTelemetry__Logging__Enabled=true
-
-    networks:
-      - traefik-public
-      - location404
-
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik-public"
-      - "traefik.http.services.game.loadbalancer.server.port=8080"
-
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-    depends_on:
-      - tempo
+    deploy:
+      mode: replicated
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
   # ==========================================================================
-  # AUTH SERVICE - JWT Authentication (2 réplicas)
+  # AUTH SERVICE - JWT Authentication
   # ==========================================================================
-  location404-auth-1:
+  location404-auth:
+    image: ${DOCKER_REGISTRY:-location404}/auth:${VERSION:-latest}
     build:
-      context: ./location404-auth
+      context: ../../location404-auth
       dockerfile: Dockerfile
-
-    container_name: location404-auth-1
-    restart: unless-stopped
 
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -378,61 +367,38 @@ services:
     depends_on:
       - tempo
 
-  location404-auth-2:
-    build:
-      context: ./location404-auth
-      dockerfile: Dockerfile
-
-    container_name: location404-auth-2
-    restart: unless-stopped
-
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__UserIdentityDatabaseProduction=${POSTGRES_AUTH_CONNECTION}
-      - JwtSettings__Issuer=location404
-      - JwtSettings__Audience=location404
-      - JwtSettings__SigningKey=${JWT_SIGNING_KEY}
-      - JwtSettings__AccessTokenMinutes=60
-      - JwtSettings__RefreshTokenMinutes=10080
-      - OpenTelemetry__ServiceName=location404-auth
-      - OpenTelemetry__ServiceVersion=1.0.0
-      - OpenTelemetry__ServiceNamespace=location404
-      - OpenTelemetry__CollectorEndpoint=http://tempo:4317
-      - OpenTelemetry__Tracing__Enabled=true
-      - OpenTelemetry__Tracing__SamplingRatio=1.0
-      - OpenTelemetry__Metrics__Enabled=true
-      - OpenTelemetry__Logging__Enabled=true
-
-    networks:
-      - traefik-public
-      - location404
-
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik-public"
-      - "traefik.http.services.auth.loadbalancer.server.port=8080"
-
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-    depends_on:
-      - tempo
+    deploy:
+      mode: replicated
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '1'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 384M
 
   # ==========================================================================
-  # DATA SERVICE - Locations & Stats (2 réplicas)
+  # DATA SERVICE - Locations & Stats
   # ==========================================================================
-  location404-data-1:
+  location404-data:
+    image: ${DOCKER_REGISTRY:-location404}/data:${VERSION:-latest}
     build:
-      context: ./location404-data
+      context: ../../location404-data
       dockerfile: Dockerfile
-
-    container_name: location404-data-1
-    restart: unless-stopped
 
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -489,59 +455,35 @@ services:
     depends_on:
       - tempo
 
-  location404-data-2:
-    build:
-      context: ./location404-data
-      dockerfile: Dockerfile
-
-    container_name: location404-data-2
-    restart: unless-stopped
-
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__GeoDataDatabase=${POSTGRES_DATA_CONNECTION}
-      - RabbitMQ__Enabled=true
-      - RabbitMQ__HostName=${RABBITMQ_HOST}
-      - RabbitMQ__Port=${RABBITMQ_PORT:-5672}
-      - RabbitMQ__UserName=${RABBITMQ_USER:-guest}
-      - RabbitMQ__Password=${RABBITMQ_PASSWORD:-guest}
-      - RabbitMQ__MatchEndedQueue=match-ended
-      - OpenTelemetry__ServiceName=location404-data
-      - OpenTelemetry__ServiceVersion=1.0.0
-      - OpenTelemetry__ServiceNamespace=location404
-      - OpenTelemetry__CollectorEndpoint=http://tempo:4317
-      - OpenTelemetry__Tracing__Enabled=true
-      - OpenTelemetry__Tracing__SamplingRatio=1.0
-      - OpenTelemetry__Metrics__Enabled=true
-      - OpenTelemetry__Logging__Enabled=true
-
-    networks:
-      - traefik-public
-      - location404
-
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=traefik-public"
-      - "traefik.http.services.data.loadbalancer.server.port=8080"
-
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-    depends_on:
-      - tempo
+    deploy:
+      mode: replicated
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '1'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 384M
 
   # ==========================================================================
   # OBSERVABILITY - Grafana Tempo (Distributed Tracing)
   # ==========================================================================
   tempo:
     image: grafana/tempo:latest
-    container_name: location404-tempo
-    restart: unless-stopped
 
     command: ["-config.file=/etc/tempo.yaml"]
 
@@ -550,9 +492,9 @@ services:
       - tempo-data:/tmp/tempo
 
     ports:
-      - "3200:3200"   # Tempo
-      - "4317:4317"   # OTLP gRPC
-      - "4318:4318"   # OTLP HTTP
+      - "13200:3200"   # Tempo (alterado de 3200)
+      - "14317:4317"   # OTLP gRPC (alterado de 4317)
+      - "14318:4318"   # OTLP HTTP (alterado de 4318)
 
     networks:
       - location404
@@ -568,8 +510,6 @@ services:
   # ==========================================================================
   loki:
     image: grafana/loki:latest
-    container_name: location404-loki
-    restart: unless-stopped
 
     command: -config.file=/etc/loki/local-config.yaml
 
@@ -578,7 +518,7 @@ services:
       - loki-data:/loki
 
     ports:
-      - "3100:3100"
+      - "13100:3100"   # Loki (alterado de 3100)
 
     networks:
       - location404
@@ -594,8 +534,6 @@ services:
   # ==========================================================================
   mimir:
     image: grafana/mimir:latest
-    container_name: location404-mimir
-    restart: unless-stopped
 
     command: ["-config.file=/etc/mimir.yaml"]
 
@@ -604,7 +542,7 @@ services:
       - mimir-data:/data
 
     ports:
-      - "9009:9009"
+      - "19009:9009"   # Mimir (alterado de 9009)
 
     networks:
       - location404
@@ -620,8 +558,6 @@ services:
   # ==========================================================================
   prometheus:
     image: prom/prometheus:latest
-    container_name: location404-prometheus
-    restart: unless-stopped
 
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -634,7 +570,7 @@ services:
       - prometheus-data:/prometheus
 
     ports:
-      - "9090:9090"
+      - "19090:9090"   # Prometheus (alterado de 9090)
 
     networks:
       - traefik-public
@@ -659,8 +595,6 @@ services:
   # ==========================================================================
   grafana:
     image: grafana/grafana:latest
-    container_name: location404-grafana
-    restart: unless-stopped
 
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
@@ -676,7 +610,7 @@ services:
       - ./observability/grafana/dashboards:/var/lib/grafana/dashboards
 
     ports:
-      - "3000:3000"
+      - "13000:3000"   # Grafana (alterado de 3000 - conflito com Dokploy)
 
     networks:
       - traefik-public
