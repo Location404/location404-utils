@@ -29,6 +29,164 @@ volumes:
   dragonfly-data:
 
 # ============================================================================
+# CONFIGS (Inline configuration files)
+# ============================================================================
+configs:
+  tempo_config:
+    content: |
+      server:
+        http_listen_port: 3200
+      distributor:
+        receivers:
+          otlp:
+            protocols:
+              grpc:
+                endpoint: 0.0.0.0:4317
+              http:
+                endpoint: 0.0.0.0:4318
+      ingester:
+        trace_idle_period: 10s
+        max_block_bytes: 1_000_000
+        max_block_duration: 5m
+      compactor:
+        compaction:
+          block_retention: 1h
+      storage:
+        trace:
+          backend: local
+          local:
+            path: /tmp/tempo/blocks
+          wal:
+            path: /tmp/tempo/wal
+
+  loki_config:
+    content: |
+      auth_enabled: false
+      server:
+        http_listen_port: 3100
+        grpc_listen_port: 9096
+      common:
+        path_prefix: /loki
+        storage:
+          filesystem:
+            chunks_directory: /loki/chunks
+            rules_directory: /loki/rules
+        replication_factor: 1
+        ring:
+          kvstore:
+            store: inmemory
+      schema_config:
+        configs:
+          - from: 2020-10-24
+            store: boltdb-shipper
+            object_store: filesystem
+            schema: v11
+            index:
+              prefix: index_
+              period: 24h
+      limits_config:
+        retention_period: 168h
+
+  mimir_config:
+    content: |
+      target: all
+      multitenancy_enabled: false
+      server:
+        http_listen_port: 9009
+        grpc_listen_port: 9095
+        log_level: info
+      common:
+        storage:
+          backend: filesystem
+          filesystem:
+            dir: /data
+      limits:
+        max_global_series_per_user: 0
+        ingestion_rate: 100000
+        ingestion_burst_size: 200000
+      blocks_storage:
+        backend: filesystem
+        filesystem:
+          dir: /data/blocks
+        bucket_store:
+          sync_dir: /data/tsdb-sync
+      compactor:
+        data_dir: /data/compactor
+      ingester:
+        ring:
+          replication_factor: 1
+      store_gateway:
+        sharding_ring:
+          replication_factor: 1
+
+  prometheus_config:
+    content: |
+      global:
+        scrape_interval: 15s
+        evaluation_interval: 15s
+      scrape_configs:
+        - job_name: 'prometheus'
+          static_configs:
+            - targets: ['localhost:9090']
+        - job_name: 'traefik'
+          static_configs:
+            - targets: ['traefik:8080']
+        - job_name: 'tempo'
+          static_configs:
+            - targets: ['tempo:3200']
+        - job_name: 'loki'
+          static_configs:
+            - targets: ['loki:3100']
+        - job_name: 'mimir'
+          static_configs:
+            - targets: ['mimir:9009']
+      remote_write:
+        - url: http://mimir:9009/api/v1/push
+
+  grafana_datasources:
+    content: |
+      apiVersion: 1
+      datasources:
+        - name: Tempo
+          type: tempo
+          access: proxy
+          url: http://tempo:3200
+          isDefault: false
+          editable: true
+        - name: Loki
+          type: loki
+          access: proxy
+          url: http://loki:3100
+          isDefault: false
+          editable: true
+        - name: Prometheus
+          type: prometheus
+          access: proxy
+          url: http://prometheus:9090
+          isDefault: true
+          editable: true
+        - name: Mimir
+          type: prometheus
+          access: proxy
+          url: http://mimir:9009/prometheus
+          isDefault: false
+          editable: true
+
+  grafana_dashboards_provisioning:
+    content: |
+      apiVersion: 1
+      providers:
+        - name: 'Default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          updateIntervalSeconds: 10
+          allowUiUpdates: true
+          options:
+            path: /var/lib/grafana/dashboards
+
+# ============================================================================
 # SERVICES
 # ============================================================================
 services:
@@ -605,8 +763,11 @@ services:
 
     command: ["-config.file=/etc/tempo.yaml"]
 
+    configs:
+      - source: tempo_config
+        target: /etc/tempo.yaml
+
     volumes:
-      - ./observability/tempo.yaml:/etc/tempo.yaml
       - tempo-data:/tmp/tempo
 
     ports:
@@ -631,8 +792,11 @@ services:
 
     command: -config.file=/etc/loki/local-config.yaml
 
+    configs:
+      - source: loki_config
+        target: /etc/loki/local-config.yaml
+
     volumes:
-      - ./observability/loki.yaml:/etc/loki/local-config.yaml
       - loki-data:/loki
 
     ports:
@@ -655,8 +819,11 @@ services:
 
     command: ["-config.file=/etc/mimir.yaml"]
 
+    configs:
+      - source: mimir_config
+        target: /etc/mimir.yaml
+
     volumes:
-      - ./observability/mimir.yaml:/etc/mimir.yaml
       - mimir-data:/data
 
     ports:
@@ -683,8 +850,11 @@ services:
       - '--web.enable-lifecycle'
       - '--web.enable-remote-write-receiver'
 
+    configs:
+      - source: prometheus_config
+        target: /etc/prometheus/prometheus.yml
+
     volumes:
-      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
 
     ports:
@@ -722,10 +892,14 @@ services:
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
 
+    configs:
+      - source: grafana_datasources
+        target: /etc/grafana/provisioning/datasources/datasources.yaml
+      - source: grafana_dashboards_provisioning
+        target: /etc/grafana/provisioning/dashboards/dashboards.yaml
+
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./observability/grafana/provisioning:/etc/grafana/provisioning
-      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards
 
     ports:
       - "13000:3000"   # Grafana (alterado de 3000 - conflito com Dokploy)
