@@ -25,6 +25,8 @@ volumes:
   tempo-data:
   mimir-data:
   prometheus-data:
+  rabbitmq-data:
+  dragonfly-data:
 
 # ============================================================================
 # SERVICES
@@ -131,6 +133,119 @@ services:
           memory: 128M
 
   # ==========================================================================
+  # RABBITMQ - Message Broker
+  # ==========================================================================
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-location404}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-location404pass}
+      - RABBITMQ_DEFAULT_VHOST=/
+
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # Management UI
+
+    networks:
+      - traefik-public
+      - location404
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
+
+      # Management UI Router
+      - "traefik.http.routers.rabbitmq.rule=Host(`rabbitmq.${DOMAIN:-location404.local}`)"
+      - "traefik.http.routers.rabbitmq.entrypoints=websecure"
+      - "traefik.http.routers.rabbitmq.tls=true"
+      - "traefik.http.routers.rabbitmq.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.rabbitmq.service=rabbitmq"
+      - "traefik.http.services.rabbitmq.loadbalancer.server.port=15672"
+
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+  # ==========================================================================
+  # DRAGONFLY - Redis-compatible in-memory datastore
+  # ==========================================================================
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+
+    command:
+      - --logtostderr
+      - --maxmemory=2gb
+      - --proactor_threads=2
+      - --requirepass=${REDIS_PASSWORD:-location404redis}
+
+    volumes:
+      - dragonfly-data:/data
+
+    ports:
+      - "6379:6379"
+
+    networks:
+      - location404
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2560M
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ==========================================================================
   # FRONTEND - Vue 3 (Auto-scaling com Load Balancing)
   # ==========================================================================
   location404-web:
@@ -212,16 +327,16 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
 
-      # Redis
+      # Redis (Dragonfly)
       - Redis__Enabled=true
-      - Redis__ConnectionString=${REDIS_CONNECTION_STRING}
+      - Redis__ConnectionString=dragonfly:6379,password=${REDIS_PASSWORD:-location404redis}
 
       # RabbitMQ
       - RabbitMQ__Enabled=true
-      - RabbitMQ__HostName=${RABBITMQ_HOST}
-      - RabbitMQ__Port=${RABBITMQ_PORT:-5672}
-      - RabbitMQ__UserName=${RABBITMQ_USER:-guest}
-      - RabbitMQ__Password=${RABBITMQ_PASSWORD:-guest}
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=${RABBITMQ_USER:-location404}
+      - RabbitMQ__Password=${RABBITMQ_PASSWORD:-location404pass}
 
       # Location404 Data API
       - Location404Data__BaseUrl=http://location404-data:8080
@@ -277,6 +392,8 @@ services:
 
     depends_on:
       - tempo
+      - dragonfly
+      - rabbitmq
 
     deploy:
       mode: replicated
@@ -409,10 +526,10 @@ services:
 
       # RabbitMQ
       - RabbitMQ__Enabled=true
-      - RabbitMQ__HostName=${RABBITMQ_HOST}
-      - RabbitMQ__Port=${RABBITMQ_PORT:-5672}
-      - RabbitMQ__UserName=${RABBITMQ_USER:-guest}
-      - RabbitMQ__Password=${RABBITMQ_PASSWORD:-guest}
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=${RABBITMQ_USER:-location404}
+      - RabbitMQ__Password=${RABBITMQ_PASSWORD:-location404pass}
       - RabbitMQ__MatchEndedQueue=match-ended
 
       # OpenTelemetry
@@ -454,6 +571,7 @@ services:
 
     depends_on:
       - tempo
+      - rabbitmq
 
     deploy:
       mode: replicated
