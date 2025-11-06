@@ -4,27 +4,27 @@ datasources:
   - name: Tempo
     type: tempo
     access: proxy
-    url: http://tempo:3200
+    url: http://127.0.0.1:13200
     isDefault: false
     editable: true
 
   - name: Loki
     type: loki
     access: proxy
-    url: http://loki:3100
+    url: http://127.0.0.1:13100
     isDefault: false
     editable: true
 
   - name: Prometheus
     type: prometheus
     access: proxy
-    url: http://prometheus:9090
+    url: http://127.0.0.1:19090
     isDefault: true
     editable: true
 
   - name: Mimir
     type: prometheus
     access: proxy
-    url: http://mimir:9009/prometheus
+    url: http://127.0.0.1:19009/prometheus
     isDefault: false
     editable: true
