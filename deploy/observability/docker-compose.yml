@@ -1,6 +1,85 @@
 version: '3.8'
 
 services:
+  tempo:
+    image: grafana/tempo:latest
+    container_name: location404-tempo
+
+    volumes:
+      - tempo-data:/tmp/tempo
+
+    ports:
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3200/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  loki:
+    image: grafana/loki:latest
+    container_name: location404-loki
+
+    volumes:
+      - loki-data:/loki
+
+    ports:
+      - "3100:3100"
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3100/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mimir:
+    image: grafana/mimir:latest
+    container_name: location404-mimir
+
+    volumes:
+      - mimir-data:/data
+
+    ports:
+      - "9009:9009"
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9009/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: location404-prometheus
+
+    command:
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+      - '--web.enable-remote-write-receiver'
+
+    volumes:
+      - prometheus-data:/prometheus
+
+    ports:
+      - "9090:9090"
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   grafana:
     image: grafana/grafana:latest
     container_name: location404-grafana
@@ -18,15 +97,26 @@ services:
       - ./provisioning:/etc/grafana/provisioning
       - ./dashboards:/var/lib/grafana/dashboards
 
-    network_mode: "host"
+    ports:
+      - "3000:3000"
+
+    depends_on:
+      - tempo
+      - loki
+      - mimir
+      - prometheus
 
     restart: unless-stopped
 
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://127.0.0.1:3000/api/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
 
 volumes:
+  tempo-data:
+  loki-data:
+  mimir-data:
+  prometheus-data:
   grafana-data:

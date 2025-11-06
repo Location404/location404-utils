@@ -20,11 +20,6 @@ networks:
 # ============================================================================
 volumes:
   traefik-certificates:
-  grafana-data:
-  loki-data:
-  tempo-data:
-  mimir-data:
-  prometheus-data:
   rabbitmq-data:
   dragonfly-data:
 
@@ -597,103 +592,4 @@ services:
           cpus: '0.25'
           memory: 384M
 
-  # ==========================================================================
-  # OBSERVABILITY - Grafana Tempo (Distributed Tracing)
-  # ==========================================================================
-  tempo:
-    image: grafana/tempo:latest
-
-    volumes:
-      - tempo-data:/tmp/tempo
-
-    ports:
-      - "13200:3200"   # Tempo (alterado de 3200)
-      - "14317:4317"   # OTLP gRPC (alterado de 4317)
-      - "14318:4318"   # OTLP HTTP (alterado de 4318)
-
-    networks:
-      - location404
-
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3200/ready"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ==========================================================================
-  # OBSERVABILITY - Grafana Loki (Logs Aggregation)
-  # ==========================================================================
-  loki:
-    image: grafana/loki:latest
-
-    volumes:
-      - loki-data:/loki
-
-    ports:
-      - "13100:3100"   # Loki (alterado de 3100)
-
-    networks:
-      - location404
-
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3100/ready"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ==========================================================================
-  # OBSERVABILITY - Grafana Mimir (Metrics Storage)
-  # ==========================================================================
-  mimir:
-    image: grafana/mimir:latest
-
-    volumes:
-      - mimir-data:/data
-
-    ports:
-      - "19009:9009"   # Mimir (alterado de 9009)
-
-    networks:
-      - location404
-
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9009/ready"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # ==========================================================================
-  # OBSERVABILITY - Prometheus (Metrics Scraper)
-  # ==========================================================================
-  prometheus:
-    image: prom/prometheus:latest
-
-    command:
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.enable-lifecycle'
-      - '--web.enable-remote-write-receiver'
-
-    volumes:
-      - prometheus-data:/prometheus
-
-    ports:
-      - "19090:9090"   # Prometheus (alterado de 9090)
-
-    networks:
-      - traefik-public
-      - location404
-
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(`prometheus.${DOMAIN:-location404.local}`)"
-      - "traefik.http.routers.prometheus.entrypoints=websecure"
-      - "traefik.http.routers.prometheus.tls=true"
-      - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
-      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
