@@ -4,6 +4,7 @@ services:
   tempo:
     image: grafana/tempo:latest
     container_name: location404-tempo
+    user: root
 
     command:
       - "-config.file=/etc/tempo.yaml"
