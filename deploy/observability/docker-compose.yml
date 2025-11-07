@@ -1,112 +1,22 @@
 version: '3.8'
 
 services:
-  tempo:
-    image: grafana/tempo:latest
-    container_name: location404-tempo
-    user: root
-
-    command:
-      - "-config.file=/etc/tempo.yaml"
-
-    volumes:
-      - tempo-data:/tmp/tempo
-      - ./tempo-config.yaml:/etc/tempo.yaml
+  otel-lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: location404-otel-lgtm
 
     ports:
-      - "3200:3200"
-      - "4327:4317"
-      - "4328:4318"
-
-    restart: unless-stopped
-
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3200/ready"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  loki:
-    image: grafana/loki:latest
-    container_name: location404-loki
-
-    volumes:
-      - loki-data:/loki
-
-    ports:
-      - "3110:3100"
-
-    restart: unless-stopped
-
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3100/ready"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  mimir:
-    image: grafana/mimir:latest
-    container_name: location404-mimir
-
-    volumes:
-      - mimir-data:/data
-
-    ports:
-      - "9019:9009"
-
-    restart: unless-stopped
-
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9009/ready"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: location404-prometheus
-
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.enable-lifecycle'
-      - '--web.enable-remote-write-receiver'
-
-    volumes:
-      - prometheus-data:/prometheus
-      - ./prometheus-config.yaml:/etc/prometheus/prometheus.yml
-
-    ports:
-      - "9190:9090"
-
-    restart: unless-stopped
-
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: location404-grafana
+      - "3010:3000"   # Grafana
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
 
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-location404}
-      - GF_USERS_ALLOW_SIGN_UP=false
+      - ENABLE_LOGS_ALL=true
 
     volumes:
-      - grafana-data:/var/lib/grafana
-
-    ports:
-      - "3010:3000"
-
-    depends_on:
-      - tempo
-      - loki
-      - mimir
-      - prometheus
+      - otel-lgtm-data:/data
 
     restart: unless-stopped
 
@@ -117,8 +27,4 @@ services:
       retries: 3
 
 volumes:
-  tempo-data:
-  loki-data:
-  mimir-data:
-  prometheus-data:
-  grafana-data:
+  otel-lgtm-data:

@@ -34,7 +34,7 @@ services:
       - Location404Data__BaseUrl=http://location404-data:8080
       - OpenTelemetry__ServiceName=location404-game
       - OpenTelemetry__ServiceVersion=1.0.0
-      - OpenTelemetry__CollectorEndpoint=http://tempo:4317
+      - OpenTelemetry__CollectorEndpoint=http://otel-lgtm:4317
       - OpenTelemetry__Tracing__Enabled=true
       - OpenTelemetry__Metrics__Enabled=true
       - Cors__AllowedOrigins=http://localhost:3400,http://localhost:5173
@@ -120,7 +120,7 @@ services:
       - JwtSettings__RefreshTokenMinutes=10080
       - OpenTelemetry__ServiceName=location404-auth
       - OpenTelemetry__ServiceVersion=1.0.0
-      - OpenTelemetry__CollectorEndpoint=http://tempo:4317
+      - OpenTelemetry__CollectorEndpoint=http://otel-lgtm:4317
       - OpenTelemetry__Tracing__Enabled=true
       - OpenTelemetry__Metrics__Enabled=true
       - Cors__AllowedOrigins=http://localhost:3400,http://localhost:5173
@@ -165,7 +165,7 @@ services:
       - RabbitMQ__MatchEndedQueue=match-ended
       - OpenTelemetry__ServiceName=location404-data
       - OpenTelemetry__ServiceVersion=1.0.0
-      - OpenTelemetry__CollectorEndpoint=http://tempo:4317
+      - OpenTelemetry__CollectorEndpoint=http://otel-lgtm:4317
       - OpenTelemetry__Tracing__Enabled=true
       - OpenTelemetry__Metrics__Enabled=true
       - Cors__AllowedOrigins=http://localhost:3400,http://localhost:5173
@@ -322,55 +322,36 @@ services:
       start_period: 40s
 
   # ==========================================================================
-  # OBSERVABILITY - Grafana Tempo (Distributed Tracing)
+  # OBSERVABILITY - OTEL LGTM Stack (Loki, Grafana, Tempo, Prometheus, Pyroscope)
   # ==========================================================================
-  tempo:
-    image: grafana/tempo:latest
-    container_name: location404-tempo
-    restart: unless-stopped
-
-    command: ["-config.file=/etc/tempo.yaml"]
-
-    volumes:
-      - ./observability/tempo.yaml:/etc/tempo.yaml
-      - tempo-data:/tmp/tempo
-
-    ports:
-      - "3200:3200"
-      - "4317:4317"
-      - "4318:4318"
-
-    networks:
-      - location404
-
-  # ==========================================================================
-  # OBSERVABILITY - Grafana (Visualization)
-  # ==========================================================================
-  grafana:
-    image: grafana/grafana:latest
-    container_name: location404-grafana
+  otel-lgtm:
+    image: grafana/otel-lgtm:latest
+    container_name: location404-otel-lgtm
     restart: unless-stopped
 
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-location404}
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - ENABLE_LOGS_ALL=true
 
     volumes:
-      - grafana-data:/var/lib/grafana
+      - otel-lgtm-data:/data
 
     ports:
-      - "3000:3000"
+      - "3010:3000"   # Grafana
+      - "4327:4317"   # OTLP gRPC
+      - "4328:4318"   # OTLP HTTP
 
     networks:
       - location404
 
-    depends_on:
-      - tempo
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 volumes:
   postgres-auth-data:
   postgres-data-data:
-  tempo-data:
-  grafana-data:
+  otel-lgtm-data:
