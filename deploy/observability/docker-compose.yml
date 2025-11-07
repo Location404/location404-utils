@@ -5,8 +5,12 @@ services:
     image: grafana/tempo:latest
     container_name: location404-tempo
 
+    command:
+      - "-config.file=/etc/tempo.yaml"
+
     volumes:
       - tempo-data:/tmp/tempo
+      - ./tempo-config.yaml:/etc/tempo.yaml
 
     ports:
       - "3200:3200"
@@ -62,12 +66,14 @@ services:
     container_name: location404-prometheus
 
     command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.enable-lifecycle'
       - '--web.enable-remote-write-receiver'
 
     volumes:
       - prometheus-data:/prometheus
+      - ./prometheus-config.yaml:/etc/prometheus/prometheus.yml
 
     ports:
       - "9190:9090"
