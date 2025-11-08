@@ -252,12 +252,18 @@ services:
       replicas: 1
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.data.rule=Host(`data.${DOMAIN:-location404.local}`) || PathPrefix(`/api/data`)"
-        - "traefik.http.routers.data.entrypoints=web"
-        - "traefik.http.routers.data.service=data"
-        - "traefik.http.services.data.loadbalancer.server.port=8080"
-        - "traefik.http.services.data.loadbalancer.healthcheck.path=/health"
-        - "traefik.http.services.data.loadbalancer.healthcheck.interval=10s"
+        - "traefik.http.routers.game.rule=Host(`game.${DOMAIN:-location404.local}`) || PathPrefix(`/gamehub`)"
+        - "traefik.http.routers.game.entrypoints=web"
+        - "traefik.http.routers.game.service=game"
+        - "traefik.http.routers.game.priority=100"
+        - "traefik.http.services.game.loadbalancer.server.port=8080"
+        - "traefik.http.services.game.loadbalancer.sticky.cookie=true"
+        - "traefik.http.services.game.loadbalancer.sticky.cookie.name=location404_game_sticky"
+        - "traefik.http.services.game.loadbalancer.sticky.cookie.httpOnly=true"
+        - "traefik.http.services.game.loadbalancer.sticky.cookie.secure=false"
+        - "traefik.http.services.game.loadbalancer.sticky.cookie.sameSite=lax"
+        - "traefik.http.services.game.loadbalancer.healthcheck.path=/health"
+        - "traefik.http.services.game.loadbalancer.healthcheck.interval=10s"
       update_config:
         parallelism: 1
         delay: 10s
