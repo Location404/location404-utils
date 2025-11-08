@@ -55,7 +55,7 @@ services:
       # - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
 
       # Logs
-      - "--log.level=INFO"
+      - "--log.level=DEBUG"
       - "--log.format=json"
       - "--accesslog=true"
       - "--accesslog.format=json"
