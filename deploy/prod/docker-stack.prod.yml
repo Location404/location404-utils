@@ -158,7 +158,7 @@ services:
 
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 2
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.web.rule=(Host(`${DOMAIN:-location404.local}`) || Host(`www.${DOMAIN:-location404.local}`) || Host(`181.215.135.221`)) && !PathPrefix(`/api`) && !PathPrefix(`/gamehub`)"
@@ -249,7 +249,7 @@ services:
 
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 2
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.game.rule=Host(`game.${DOMAIN:-location404.local}`) || PathPrefix(`/gamehub`)"
@@ -342,7 +342,7 @@ services:
 
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 2
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.auth.rule=Host(`auth.${DOMAIN:-location404.local}`) || PathPrefix(`/api/auth`) || PathPrefix(`/api/users`)"
@@ -428,7 +428,7 @@ services:
 
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 2
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.data.rule=Host(`data.${DOMAIN:-location404.local}`) || PathPrefix(`/api`)"
