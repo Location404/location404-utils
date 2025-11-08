@@ -161,9 +161,10 @@ services:
       replicas: 1
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.web.rule=Host(`${DOMAIN:-location404.local}`) || Host(`www.${DOMAIN:-location404.local}`) || Host(`181.215.135.221`)"
+        - "traefik.http.routers.web.rule=(Host(`${DOMAIN:-location404.local}`) || Host(`www.${DOMAIN:-location404.local}`) || Host(`181.215.135.221`)) && !PathPrefix(`/api`) && !PathPrefix(`/gamehub`)"
         - "traefik.http.routers.web.entrypoints=web"
         - "traefik.http.routers.web.service=web"
+        - "traefik.http.routers.web.priority=10"
         - "traefik.http.services.web.loadbalancer.server.port=3400"
         - "traefik.http.services.web.loadbalancer.sticky.cookie=true"
         - "traefik.http.services.web.loadbalancer.sticky.cookie.name=location404_web"
@@ -333,7 +334,7 @@ services:
       replicas: 1
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.auth.rule=Host(`auth.${DOMAIN:-location404.local}`) || PathPrefix(`/api/auth`)"
+        - "traefik.http.routers.auth.rule=Host(`auth.${DOMAIN:-location404.local}`) || PathPrefix(`/api/auth`) || PathPrefix(`/api/users`)"
         - "traefik.http.routers.auth.entrypoints=web"
         - "traefik.http.routers.auth.service=auth"
         - "traefik.http.routers.auth.priority=100"
