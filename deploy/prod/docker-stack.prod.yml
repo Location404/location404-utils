@@ -385,6 +385,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
 
+      # CORS
+      - Cors__AllowedOrigins=http://181.215.135.221,http://location404.local
+
       # Database
       - ConnectionStrings__GeoDataDatabase=${POSTGRES_DATA_CONNECTION}
 
