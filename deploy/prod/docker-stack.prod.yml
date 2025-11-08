@@ -41,7 +41,6 @@ services:
       - "--providers.swarm=true"
       - "--providers.swarm.endpoint=unix:///var/run/docker.sock"
       - "--providers.swarm.exposedbydefault=false"
-      - "--providers.swarm.network=traefik-public"
 
       # Entrypoints
       - "--entrypoints.web.address=:80"
@@ -145,7 +144,6 @@ services:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=traefik-public"
 
       # Router (HTTP apenas - sem SSL)
       - "traefik.http.routers.web.rule=Host(`${DOMAIN:-location404.local}`) || Host(`www.${DOMAIN:-location404.local}`) || Host(`181.215.135.221`)"
@@ -236,7 +234,6 @@ services:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=traefik-public"
 
       # Router (HTTP apenas - sem SSL)
       - "traefik.http.routers.game.rule=Host(`game.${DOMAIN:-location404.local}`) || PathPrefix(`/gamehub`)"
@@ -331,7 +328,6 @@ services:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=traefik-public"
 
       # Router (HTTP apenas - sem SSL)
       - "traefik.http.routers.auth.rule=Host(`auth.${DOMAIN:-location404.local}`) || PathPrefix(`/api/auth`)"
@@ -417,7 +413,6 @@ services:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=traefik-public"
 
       # Router (HTTP apenas - sem SSL)
       - "traefik.http.routers.data.rule=Host(`data.${DOMAIN:-location404.local}`) || PathPrefix(`/api/data`)"
