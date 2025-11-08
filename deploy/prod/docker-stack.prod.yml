@@ -257,24 +257,6 @@ services:
         - "traefik.http.services.data.loadbalancer.server.port=8080"
         - "traefik.http.services.data.loadbalancer.healthcheck.path=/health"
         - "traefik.http.services.data.loadbalancer.healthcheck.interval=10s"
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.game.rule=Host(`game.${DOMAIN:-location404.local}`) || PathPrefix(`/gamehub`)"
-        - "traefik.http.routers.game.entrypoints=web"
-        - "traefik.http.routers.game.service=game"
-        - "traefik.http.services.game.loadbalancer.server.port=8080"
-        - "traefik.http.services.game.loadbalancer.sticky.cookie=true"
-        - "traefik.http.services.game.loadbalancer.sticky.cookie.name=location404_game_sticky"
-        - "traefik.http.services.game.loadbalancer.sticky.cookie.httpOnly=true"
-        - "traefik.http.services.game.loadbalancer.sticky.cookie.secure=true"
-        - "traefik.http.services.game.loadbalancer.sticky.cookie.sameSite=lax"
-        - "traefik.http.services.game.loadbalancer.healthcheck.path=/health"
-        - "traefik.http.services.game.loadbalancer.healthcheck.interval=10s"
-        - "traefik.http.middlewares.game-cors.headers.accesscontrolalloworiginlist=https://${DOMAIN:-location404.local},https://www.${DOMAIN:-location404.local}"
-        - "traefik.http.middlewares.game-cors.headers.accesscontrolallowcredentials=true"
-        - "traefik.http.middlewares.game-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS"
-        - "traefik.http.middlewares.game-cors.headers.accesscontrolallowheaders=*"
-        - "traefik.http.routers.game.middlewares=game-cors"
       update_config:
         parallelism: 1
         delay: 10s
