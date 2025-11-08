@@ -148,7 +148,7 @@ services:
       - "traefik.docker.network=traefik-public"
 
       # Router (HTTP apenas - sem SSL)
-      - "traefik.http.routers.web.rule=Host(`${DOMAIN:-location404.local}`) || Host(`www.${DOMAIN:-location404.local}`)"
+      - "traefik.http.routers.web.rule=Host(`${DOMAIN:-location404.local}`) || Host(`www.${DOMAIN:-location404.local}`) || Host(`181.215.135.221`)"
       - "traefik.http.routers.web.entrypoints=web"
       # TLS comentado para testes
       # - "traefik.http.routers.web.tls=true"
@@ -239,7 +239,7 @@ services:
       - "traefik.docker.network=traefik-public"
 
       # Router (HTTP apenas - sem SSL)
-      - "traefik.http.routers.game.rule=Host(`game.${DOMAIN:-location404.local}`)"
+      - "traefik.http.routers.game.rule=Host(`game.${DOMAIN:-location404.local}`) || PathPrefix(`/gamehub`)"
       - "traefik.http.routers.game.entrypoints=web"
       # TLS comentado para testes
       # - "traefik.http.routers.game.tls=true"
@@ -334,7 +334,7 @@ services:
       - "traefik.docker.network=traefik-public"
 
       # Router (HTTP apenas - sem SSL)
-      - "traefik.http.routers.auth.rule=Host(`auth.${DOMAIN:-location404.local}`)"
+      - "traefik.http.routers.auth.rule=Host(`auth.${DOMAIN:-location404.local}`) || PathPrefix(`/api/auth`)"
       - "traefik.http.routers.auth.entrypoints=web"
       # TLS comentado para testes
       # - "traefik.http.routers.auth.tls=true"
@@ -420,7 +420,7 @@ services:
       - "traefik.docker.network=traefik-public"
 
       # Router (HTTP apenas - sem SSL)
-      - "traefik.http.routers.data.rule=Host(`data.${DOMAIN:-location404.local}`)"
+      - "traefik.http.routers.data.rule=Host(`data.${DOMAIN:-location404.local}`) || PathPrefix(`/api/data`)"
       - "traefik.http.routers.data.entrypoints=web"
       # TLS comentado para testes
       # - "traefik.http.routers.data.tls=true"
