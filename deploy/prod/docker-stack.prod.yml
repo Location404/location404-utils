@@ -168,7 +168,7 @@ services:
         - "traefik.http.services.web.loadbalancer.sticky.cookie=true"
         - "traefik.http.services.web.loadbalancer.sticky.cookie.name=location404_web"
         - "traefik.http.services.web.loadbalancer.sticky.cookie.httpOnly=true"
-        - "traefik.http.services.web.loadbalancer.sticky.cookie.secure=true"
+        - "traefik.http.services.web.loadbalancer.sticky.cookie.secure=false"
         - "traefik.http.services.web.loadbalancer.healthcheck.path=/"
         - "traefik.http.services.web.loadbalancer.healthcheck.interval=30s"
       update_config:
@@ -336,6 +336,7 @@ services:
         - "traefik.http.routers.auth.rule=Host(`auth.${DOMAIN:-location404.local}`) || PathPrefix(`/api/auth`)"
         - "traefik.http.routers.auth.entrypoints=web"
         - "traefik.http.routers.auth.service=auth"
+        - "traefik.http.routers.auth.priority=100"
         - "traefik.http.services.auth.loadbalancer.server.port=8080"
         - "traefik.http.services.auth.loadbalancer.sticky.cookie=true"
         - "traefik.http.services.auth.loadbalancer.sticky.cookie.name=location404_auth"
@@ -418,9 +419,10 @@ services:
       replicas: 1
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.data.rule=Host(`data.${DOMAIN:-location404.local}`) || PathPrefix(`/api/data`)"
+        - "traefik.http.routers.data.rule=Host(`data.${DOMAIN:-location404.local}`) || PathPrefix(`/api`)"
         - "traefik.http.routers.data.entrypoints=web"
         - "traefik.http.routers.data.service=data"
+        - "traefik.http.routers.data.priority=50"
         - "traefik.http.services.data.loadbalancer.server.port=8080"
         - "traefik.http.services.data.loadbalancer.healthcheck.path=/health"
         - "traefik.http.services.data.loadbalancer.healthcheck.interval=10s"
