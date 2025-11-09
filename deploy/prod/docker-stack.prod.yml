@@ -218,6 +218,11 @@ services:
       # Location404 Data API
       - Location404Data__BaseUrl=http://location404-data:8080
 
+      # JWT Authentication
+      - JwtSettings__Issuer=location404
+      - JwtSettings__Audience=location404
+      - JwtSettings__SigningKey=${JWT_SIGNING_KEY}
+
       # OpenTelemetry (External LGTM Stack via Dokploy)
       - OpenTelemetry__ServiceName=location404-game
       - OpenTelemetry__ServiceVersion=${VERSION:-1.0.0}
@@ -405,6 +410,11 @@ services:
       - RabbitMQ__UserName=${RABBITMQ_USER:-location404}
       - RabbitMQ__Password=${RABBITMQ_PASSWORD:-location404pass}
       - RabbitMQ__MatchEndedQueue=match-ended
+
+      # JWT Authentication
+      - JwtSettings__Issuer=location404
+      - JwtSettings__Audience=location404
+      - JwtSettings__SigningKey=${JWT_SIGNING_KEY}
 
       # OpenTelemetry (External LGTM Stack via Dokploy)
       - OpenTelemetry__ServiceName=location404-data
