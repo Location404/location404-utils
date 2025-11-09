@@ -304,6 +304,9 @@ services:
       # Database
       - ConnectionStrings__UserIdentityDatabaseProduction=${POSTGRES_AUTH_CONNECTION}
 
+      # Cache (Redis/Dragonfly)
+      - ConnectionStrings__Cache=${REDIS_CONNECTION}
+
       # JWT
       - JwtSettings__Issuer=location404
       - JwtSettings__Audience=location404
@@ -391,6 +394,9 @@ services:
 
       # Database
       - ConnectionStrings__GeoDataDatabase=${POSTGRES_DATA_CONNECTION}
+
+      # Cache (Redis/Dragonfly)
+      - ConnectionStrings__Cache=${REDIS_CONNECTION}
 
       # RabbitMQ (External - Dokploy)
       - RabbitMQ__Enabled=true
