@@ -128,14 +128,12 @@ services:
   # ==========================================================================
   location404-web:
     image: ${DOCKER_REGISTRY:-ghcr.io/location404}/location404-web:${VERSION:-main}
-    build:
-      context: ../../location404-web
-      dockerfile: Dockerfile
-      args:
-        VITE_AUTH_API: https://auth.${DOMAIN:-location404.local}
-        VITE_GAME_API: https://game.${DOMAIN:-location404.local}
-        VITE_DATA_API: https://data.${DOMAIN:-location404.local}
-        VITE_GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
+
+    environment:
+      - VITE_AUTH_API=${WEB_AUTH_API:-http://181.215.135.221}
+      - VITE_GAME_API=${WEB_GAME_API:-http://181.215.135.221}
+      - VITE_DATA_API=${WEB_DATA_API:-http://181.215.135.221}
+      - VITE_GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
 
     networks:
       - traefik-public
