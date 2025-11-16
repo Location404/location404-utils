@@ -44,17 +44,17 @@ services:
       # Entrypoints
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      # Comentado para permitir HTTP sem redirecionar
-      # - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      # - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      # Redirect HTTP -> HTTPS
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
 
-      # SSL/TLS (Let's Encrypt para produção) - COMENTADO PARA TESTES
-      # - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
-      # - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@location404.com}"
-      # - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      # SSL/TLS (Let's Encrypt)
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@location404.com}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
 
-      # Logs
-      - "--log.level=INFO"
+      # Logs (DEBUG para Let's Encrypt troubleshooting)
+      - "--log.level=DEBUG"
       - "--log.format=json"
       - "--accesslog=true"
       - "--accesslog.format=json"
@@ -95,10 +95,9 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN:-location404.local}`)"
       - "traefik.http.routers.dashboard.service=api@internal"
-      - "traefik.http.routers.dashboard.entrypoints=web"
-      # TLS comentado para testes
-      # - "traefik.http.routers.dashboard.tls=true"
-      # - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
 
     healthcheck:
       test: ["CMD", "traefik", "healthcheck", "--ping"]
@@ -163,14 +162,16 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.web.rule=(Host(`${DOMAIN:-location404.local}`) || Host(`www.${DOMAIN:-location404.local}`) || Host(`181.215.135.221`)) && !PathPrefix(`/api`) && !PathPrefix(`/gamehub`)"
-        - "traefik.http.routers.web.entrypoints=web"
+        - "traefik.http.routers.web.entrypoints=websecure"
         - "traefik.http.routers.web.service=web"
         - "traefik.http.routers.web.priority=10"
+        - "traefik.http.routers.web.tls=true"
+        - "traefik.http.routers.web.tls.certresolver=letsencrypt"
         - "traefik.http.services.web.loadbalancer.server.port=3400"
         - "traefik.http.services.web.loadbalancer.sticky.cookie=true"
         - "traefik.http.services.web.loadbalancer.sticky.cookie.name=location404_web"
         - "traefik.http.services.web.loadbalancer.sticky.cookie.httpOnly=true"
-        - "traefik.http.services.web.loadbalancer.sticky.cookie.secure=false"
+        - "traefik.http.services.web.loadbalancer.sticky.cookie.secure=true"
         - "traefik.http.services.web.loadbalancer.healthcheck.path=/"
         - "traefik.http.services.web.loadbalancer.healthcheck.interval=30s"
       update_config:
@@ -259,18 +260,20 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.game.rule=Host(`game.${DOMAIN:-location404.local}`) || PathPrefix(`/gamehub`)"
-        - "traefik.http.routers.game.entrypoints=web"
+        - "traefik.http.routers.game.entrypoints=websecure"
         - "traefik.http.routers.game.service=game"
         - "traefik.http.routers.game.priority=100"
+        - "traefik.http.routers.game.tls=true"
+        - "traefik.http.routers.game.tls.certresolver=letsencrypt"
         - "traefik.http.services.game.loadbalancer.server.port=8080"
         - "traefik.http.services.game.loadbalancer.sticky.cookie=true"
         - "traefik.http.services.game.loadbalancer.sticky.cookie.name=location404_game_sticky"
         - "traefik.http.services.game.loadbalancer.sticky.cookie.httpOnly=true"
-        - "traefik.http.services.game.loadbalancer.sticky.cookie.secure=false"
+        - "traefik.http.services.game.loadbalancer.sticky.cookie.secure=true"
         - "traefik.http.services.game.loadbalancer.sticky.cookie.sameSite=lax"
         - "traefik.http.services.game.loadbalancer.healthcheck.path=/health"
         - "traefik.http.services.game.loadbalancer.healthcheck.interval=10s"
-        - "traefik.http.middlewares.game-cors.headers.accesscontrolalloworiginlist=http://181.215.135.221,http://location404.local"
+        - "traefik.http.middlewares.game-cors.headers.accesscontrolalloworiginlist=https://${DOMAIN:-location404.local}"
         - "traefik.http.middlewares.game-cors.headers.accesscontrolallowcredentials=true"
         - "traefik.http.middlewares.game-cors.headers.accesscontrolallowmethods=GET,POST,OPTIONS"
         - "traefik.http.middlewares.game-cors.headers.accesscontrolallowheaders=*"
@@ -355,9 +358,11 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.auth.rule=Host(`auth.${DOMAIN:-location404.local}`) || PathPrefix(`/api/auth`) || PathPrefix(`/api/users`)"
-        - "traefik.http.routers.auth.entrypoints=web"
+        - "traefik.http.routers.auth.entrypoints=websecure"
         - "traefik.http.routers.auth.service=auth"
         - "traefik.http.routers.auth.priority=100"
+        - "traefik.http.routers.auth.tls=true"
+        - "traefik.http.routers.auth.tls.certresolver=letsencrypt"
         - "traefik.http.services.auth.loadbalancer.server.port=8080"
         - "traefik.http.services.auth.loadbalancer.sticky.cookie=true"
         - "traefik.http.services.auth.loadbalancer.sticky.cookie.name=location404_auth"
@@ -395,7 +400,7 @@ services:
       - ASPNETCORE_URLS=http://+:8080
 
       # CORS
-      - Cors__AllowedOrigins=http://181.215.135.221,http://location404.local
+      - Cors__AllowedOrigins=https://${DOMAIN:-location404.local}
 
       # Database
       - ConnectionStrings__GeoDataDatabase=${POSTGRES_DATA_CONNECTION}
@@ -452,9 +457,11 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.http.routers.data.rule=Host(`data.${DOMAIN:-location404.local}`) || PathPrefix(`/api`)"
-        - "traefik.http.routers.data.entrypoints=web"
+        - "traefik.http.routers.data.entrypoints=websecure"
         - "traefik.http.routers.data.service=data"
         - "traefik.http.routers.data.priority=50"
+        - "traefik.http.routers.data.tls=true"
+        - "traefik.http.routers.data.tls.certresolver=letsencrypt"
         - "traefik.http.services.data.loadbalancer.server.port=8080"
         - "traefik.http.services.data.loadbalancer.healthcheck.path=/health"
         - "traefik.http.services.data.loadbalancer.healthcheck.interval=10s"
