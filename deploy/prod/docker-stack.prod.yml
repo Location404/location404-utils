@@ -48,11 +48,10 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
 
-      # SSL/TLS (Let's Encrypt STAGING - para testes)
+      # SSL/TLS (Let's Encrypt PRODUÇÃO)
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@location404.com}"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
 
       # Logs (DEBUG para Let's Encrypt troubleshooting)
       - "--log.level=DEBUG"
