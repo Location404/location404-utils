@@ -213,6 +213,7 @@ services:
 
       # Location404 Data API
       - Location404Data__BaseUrl=http://location404-data:8080
+      - GeoDataService__BaseUrl=http://location404-data:8080
 
       # JWT Authentication
       - JwtSettings__Issuer=location404
