@@ -1,12 +1,10 @@
-/* Reset e configurações base */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-
 :root {
-  /* Cores do projeto (do tailwind.config.js) */
+  
   --blue-dark: #0F5396;
   --blue-medium: #1E6BB3;
   --blue-light: #3B96E6;
@@ -15,13 +13,11 @@
   --green-light: #51B059;
   --gray-dark: #333333;
   --gray-light: #CCCCCC;
-
-  /* Proporção exata A0 (841 x 1189 mm) */
-  /* Usando escala 1mm = 3.78px (300 DPI) */
-  --poster-width: 3178px;  /* 841mm */
-  --poster-height: 4494px; /* 1189mm */
+  
+  
+  --poster-width: 3178px;  
+  --poster-height: 4494px; 
 }
-
 body {
   font-family: 'Arial', 'Helvetica', sans-serif;
   background-color: #1a1a1a;
@@ -32,8 +28,6 @@ body {
   padding: 20px;
   color: white;
 }
-
-/* Container do Pôster - Proporção A0 exata */
 .poster-container {
   position: relative;
   width: var(--poster-width);
@@ -45,8 +39,6 @@ body {
   display: flex;
   flex-direction: column;
 }
-
-/* Background Layer */
 .background-layer {
   position: absolute;
   top: 0;
@@ -59,8 +51,6 @@ body {
   background-repeat: no-repeat;
   z-index: 0;
 }
-
-/* Content Layer */
 .content-layer {
   position: relative;
   width: 100%;
@@ -72,8 +62,6 @@ body {
   z-index: 1;
   overflow: hidden;
 }
-
-/* Header Section */
 .header-section {
   display: flex;
   align-items: center;
@@ -89,7 +77,6 @@ body {
   position: relative;
   flex-shrink: 0;
 }
-
 .header-section::before {
   content: '';
   position: absolute;
@@ -102,28 +89,23 @@ body {
   mask-composite: exclude;
   pointer-events: none;
 }
-
 .logo-left, .logo-right {
   flex-shrink: 0;
 }
-
 .logo-catolica {
   height: 140px;
   width: auto;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
 }
-
 .logo-project {
   height: 160px;
   width: auto;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
 }
-
 .title-section {
   flex: 1;
   text-align: center;
 }
-
 .main-title {
   font-size: 95px;
   font-weight: 900;
@@ -133,7 +115,6 @@ body {
   margin-bottom: 5px;
   line-height: 1;
 }
-
 .subtitle {
   font-size: 38px;
   font-weight: 600;
@@ -141,8 +122,6 @@ body {
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   letter-spacing: 1px;
 }
-
-/* Main Content - 2 Columns */
 .main-content {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
@@ -151,8 +130,6 @@ body {
   min-height: 0;
   overflow: hidden;
 }
-
-/* Glass Box Effect (estilo do frontend) */
 .glass-box {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(16px);
@@ -163,7 +140,6 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.25);
   position: relative;
 }
-
 .glass-box::before {
   content: '';
   position: absolute;
@@ -176,8 +152,6 @@ body {
   mask-composite: exclude;
   pointer-events: none;
 }
-
-/* Columns */
 .left-column, .right-column {
   display: flex;
   flex-direction: column;
@@ -186,30 +160,24 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
 }
-
 .left-column::-webkit-scrollbar,
 .right-column::-webkit-scrollbar {
   width: 8px;
 }
-
 .left-column::-webkit-scrollbar-track,
 .right-column::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
 }
-
 .left-column::-webkit-scrollbar-thumb,
 .right-column::-webkit-scrollbar-thumb {
   background: rgba(81, 176, 89, 0.6);
   border-radius: 10px;
 }
-
 .left-column::-webkit-scrollbar-thumb:hover,
 .right-column::-webkit-scrollbar-thumb:hover {
   background: rgba(81, 176, 89, 0.8);
 }
-
-/* Section Titles */
 .section-title {
   font-size: 46px;
   font-weight: 900;
@@ -221,7 +189,6 @@ body {
   border-bottom: 2px solid var(--green-light);
   padding-bottom: 10px;
 }
-
 .subsection-title {
   font-size: 32px;
   font-weight: 700;
@@ -231,8 +198,6 @@ body {
   letter-spacing: 1px;
   text-shadow: 0 2px 8px rgba(59, 150, 230, 0.5);
 }
-
-/* Text Content */
 .text-content {
   font-size: 28px;
   line-height: 1.5;
@@ -241,14 +206,11 @@ body {
   text-align: justify;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
-
 .highlight-text {
   color: var(--green-light);
   font-weight: 600;
   text-shadow: 0 2px 8px rgba(81, 176, 89, 0.4);
 }
-
-/* Lists */
 .tech-list {
   list-style: none;
   padding-left: 0;
@@ -259,14 +221,12 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 12px 20px;
 }
-
 .tech-list li {
   margin-bottom: 0;
   padding-left: 32px;
   position: relative;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
-
 .tech-list li::before {
   content: '▸';
   position: absolute;
@@ -275,21 +235,17 @@ body {
   font-weight: bold;
   font-size: 32px;
 }
-
-/* Technology Grid */
 .tech-grid {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-
 .tech-category {
   padding: 12px 18px;
   background: rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
-
 .tech-label {
   font-size: 30px;
   font-weight: 700;
@@ -297,22 +253,18 @@ body {
   margin-bottom: 6px;
   text-shadow: 0 2px 6px rgba(59, 150, 230, 0.4);
 }
-
 .tech-items {
   font-size: 26px;
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.4;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
-
-/* Results List */
 .results-list {
   list-style: none;
   padding-left: 0;
   font-size: 26px;
   line-height: 1.5;
 }
-
 .results-list li {
   margin-bottom: 8px;
   display: flex;
@@ -321,12 +273,10 @@ body {
   color: rgba(255, 255, 255, 0.9);
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
-
 .results-list.compact li {
   margin-bottom: 6px;
   font-size: 24px;
 }
-
 .check-icon {
   color: var(--green-light);
   font-size: 32px;
@@ -334,13 +284,10 @@ body {
   flex-shrink: 0;
   text-shadow: 0 2px 8px rgba(81, 176, 89, 0.6);
 }
-
-/* Image Containers */
 .image-container {
   padding: 18px;
   text-align: center;
 }
-
 .game-screenshot,
 .diagram-image {
   width: 100%;
@@ -350,7 +297,6 @@ body {
   border: 2px solid rgba(255, 255, 255, 0.2);
   margin-bottom: 10px;
 }
-
 .image-caption {
   font-size: 24px;
   font-weight: 600;
@@ -359,13 +305,10 @@ body {
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
   margin-top: 8px;
 }
-
-/* QR Code Section */
 .qr-section {
   text-align: center;
   padding: 25px 20px;
 }
-
 .qr-code {
   width: 260px;
   height: 260px;
@@ -375,7 +318,6 @@ body {
   background: white;
   padding: 12px;
 }
-
 .qr-caption {
   font-size: 28px;
   font-weight: 700;
@@ -383,7 +325,6 @@ body {
   margin-bottom: 10px;
   text-shadow: 0 2px 8px rgba(81, 176, 89, 0.5);
 }
-
 .qr-url {
   font-size: 32px;
   font-weight: 900;
@@ -391,23 +332,18 @@ body {
   text-shadow: 0 2px 10px rgba(59, 150, 230, 0.6);
   letter-spacing: 1px;
 }
-
-/* Triple QR Code Section */
 .triple-qr-section {
   padding: 25px;
 }
-
 .triple-qr-section .section-title {
   font-size: 38px;
 }
-
 .triple-qr-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 15px;
   margin-top: 15px;
 }
-
 .qr-item {
   display: flex;
   flex-direction: row;
@@ -418,7 +354,6 @@ body {
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
-
 .qr-code-medium {
   width: 200px;
   height: 200px;
@@ -428,7 +363,6 @@ body {
   padding: 8px;
   flex-shrink: 0;
 }
-
 .qr-text {
   display: flex;
   flex-direction: column;
@@ -437,7 +371,6 @@ body {
   text-align: left;
   flex: 1;
 }
-
 .qr-label {
   font-size: 26px;
   font-weight: 700;
@@ -445,7 +378,6 @@ body {
   text-shadow: 0 2px 8px rgba(81, 176, 89, 0.6);
   margin: 0;
 }
-
 .qr-sublabel {
   font-size: 20px;
   font-weight: 600;
@@ -453,18 +385,14 @@ body {
   text-shadow: 0 2px 6px rgba(59, 150, 230, 0.5);
   margin: 0;
 }
-
-/* References Section */
 .references-section {
   padding: 25px;
 }
-
 .references-content {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
 .reference-item {
   font-size: 22px;
   line-height: 1.4;
@@ -472,8 +400,6 @@ body {
   text-align: justify;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
-
-/* Footer */
 .footer-section {
   padding: 20px 40px;
   background: rgba(255, 255, 255, 0.15);
@@ -486,7 +412,6 @@ body {
   position: relative;
   flex-shrink: 0;
 }
-
 .footer-section::before {
   content: '';
   position: absolute;
@@ -499,7 +424,6 @@ body {
   mask-composite: exclude;
   pointer-events: none;
 }
-
 .student-info {
   font-size: 34px;
   font-weight: 700;
@@ -507,35 +431,28 @@ body {
   margin-bottom: 8px;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
-
 .course-info {
   font-size: 30px;
   color: rgba(255, 255, 255, 0.85);
   font-style: italic;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
-
-/* Responsive para visualização web */
 @media (max-width: 1920px) {
   .poster-container {
     width: 100%;
     height: auto;
   }
 }
-
-/* Print Styles para impressão A0 */
 @media print {
   @page {
     size: 841mm 1189mm;
     margin: 0;
   }
-
   body {
     margin: 0;
     padding: 0;
     background: transparent;
   }
-
   .poster-container {
     width: 841mm;
     height: 1189mm;
