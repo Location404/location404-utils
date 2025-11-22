@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Location404 - Pôster Acadêmico</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="poster-container">
+    <!-- Background Image -->
+    <div class="background-layer"></div>
+
+    <!-- Content Layer -->
+    <div class="content-layer">
+
+      <!-- Header -->
+      <header class="header-section">
+        <div class="logo-left">
+          <img src="/logo-catolicasc.png" alt="Católica SC" class="logo-catolica">
+        </div>
+
+        <div class="title-section">
+          <h1 class="main-title">Location404</h1>
+          <p class="subtitle">Jogo Multiplayer de Geolocalização</p>
+        </div>
+
+        <div class="logo-right">
+          <img src="/logo.png" alt="Location404" class="logo-project">
+        </div>
+      </header>
+
+      <!-- Main Content - 2 Columns -->
+      <main class="main-content">
+
+        <!-- Left Column -->
+        <div class="left-column">
+
+          <!-- Introdução -->
+          <section class="glass-box">
+            <h2 class="section-title">INTRODUÇÃO</h2>
+            <p class="text-content">
+              <strong>Location404</strong> é um jogo de geolocalização multiplayer que te leva
+              em uma jornada ao redor do mundo e desafia sua habilidade de
+              reconhecer localizações através do Google Street View.
+            </p>
+            <p class="text-content">
+              Dois jogadores competem simultaneamente em 3 rodadas, onde precisam
+              adivinhar onde estão no mapa. Quanto mais preciso o palpite, maior
+              a pontuação.
+            </p>
+          </section>
+
+          <!-- Screenshot do Jogo -->
+          <div class="image-container glass-box">
+            <img src="/partida-imagem.png" alt="Tela de Jogo" class="game-screenshot">
+            <p class="image-caption">Figura 1 – Interface de jogo com Street View e mapa interativo</p>
+          </div>
+
+          <!-- Desenvolvimento -->
+          <section class="glass-box">
+            <h2 class="section-title">DESENVOLVIMENTO</h2>
+
+            <h3 class="subsection-title">ARQUITETURA DE MICROSERVIÇOS</h3>
+            <ul class="tech-list">
+              <li><strong>4 serviços independentes</strong> com Clean Architecture</li>
+              <li><strong>location404-auth:</strong> Autenticação JWT + RefreshToken</li>
+              <li><strong>location404-game:</strong> Engine real-time com SignalR</li>
+              <li><strong>location404-data:</strong> API de localizações e ranking</li>
+              <li><strong>location404-web:</strong> Interface Vue 3 responsiva</li>
+            </ul>
+
+            <h3 class="subsection-title">INFRAESTRUTURA AVANÇADA</h3>
+            <ul class="tech-list">
+              <li><strong>Traefik v3:</strong> Load balancer + SSL automático (Let's Encrypt)</li>
+              <li><strong>Docker Swarm:</strong> Orquestração de containers</li>
+              <li><strong>Redis/Dragonfly:</strong> Cache + SignalR backplane</li>
+              <li><strong>RabbitMQ:</strong> Mensageria assíncrona para eventos</li>
+            </ul>
+
+            <h3 class="subsection-title">OBSERVABILIDADE COMPLETA</h3>
+            <ul class="tech-list">
+              <li><strong>OpenTelemetry:</strong> Traces, métricas e logs padronizados</li>
+              <li><strong>Grafana LGTM Stack:</strong> Monitoramento em tempo real</li>
+              <li><strong>Health checks</strong> em todos os serviços</li>
+            </ul>
+          </section>
+
+          <!-- Diagrama Container (usando screenshot como placeholder) -->
+          <div class="image-container glass-box">
+            <img src="/diagrama-c4-container.svg" alt="Diagrama C4 Container" class="diagram-image">
+            <p class="image-caption">Figura 2 – Arquitetura de microserviços (C4 - Container Level)</p>
+          </div>
+
+          <!-- Referências -->
+          <section class="glass-box references-section">
+            <h2 class="section-title">REFERÊNCIAS</h2>
+            <div class="references-content">
+              <p class="reference-item"><strong>GOOGLE.</strong> Google Maps JavaScript API. Disponível em: https://developers.google.com/maps. Acesso em: 2025.</p>
+              <p class="reference-item"><strong>MICROSOFT.</strong> ASP.NET Core SignalR Documentation. Disponível em: https://docs.microsoft.com/aspnet/core/signalr. Acesso em: 2025.</p>
+              <p class="reference-item"><strong>OPENTELEMETRY.</strong> OpenTelemetry Specification. Disponível em: https://opentelemetry.io/docs/specs/otel/. Acesso em: 2025.</p>
+              <p class="reference-item"><strong>MARTIN, Robert C.</strong> Clean Architecture: A Craftsman's Guide to Software Structure and Design. Prentice Hall, 2017.</p>
+              <p class="reference-item"><strong>FOWLER, Martin.</strong> Patterns of Enterprise Application Architecture. Addison-Wesley, 2002.</p>
+              <p class="reference-item"><strong>NEWMAN, Sam.</strong> Building Microservices: Designing Fine-Grained Systems. 2nd ed. O'Reilly Media, 2021.</p>
+              <p class="reference-item"><strong>VUE.JS TEAM.</strong> Vue.js 3 Documentation: Composition API and State Management. Disponível em: https://vuejs.org/guide. Acesso em: 2025.</p>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- Right Column -->
+        <div class="right-column">
+
+          <!-- Diagrama Real-time (usando screenshot como placeholder) -->
+          <div class="image-container glass-box">
+            <img src="/diagrama-signalr.svg" alt="Fluxo SignalR" class="diagram-image">
+            <p class="image-caption">Figura 3 – Fluxo de matchmaking e gameplay real-time via SignalR</p>
+          </div>
+
+          <!-- Tecnologias -->
+          <section class="glass-box">
+            <h2 class="section-title">TECNOLOGIAS</h2>
+            <div class="tech-grid">
+              <div class="tech-category">
+                <p class="tech-label">Frontend</p>
+                <p class="tech-items">Vue 3 • TypeScript • Pinia • SignalR Client</p>
+              </div>
+              <div class="tech-category">
+                <p class="tech-label">Backend</p>
+                <p class="tech-items">.NET 9 • SignalR • EF Core • JWT</p>
+              </div>
+              <div class="tech-category">
+                <p class="tech-label">Infraestrutura</p>
+                <p class="tech-items">Docker Swarm • Traefik v3 • Redis • RabbitMQ</p>
+              </div>
+              <div class="tech-category">
+                <p class="tech-label">Dados</p>
+                <p class="tech-items">PostgreSQL • Redis Cache</p>
+              </div>
+              <div class="tech-category">
+                <p class="tech-label">Observabilidade</p>
+                <p class="tech-items">OpenTelemetry • Grafana • Prometheus • Loki</p>
+              </div>
+              <div class="tech-category">
+                <p class="tech-label">CI/CD</p>
+                <p class="tech-items">GitHub Actions • SonarCloud • Dokploy</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Resultados -->
+          <section class="glass-box">
+            <h2 class="section-title">RESULTADOS</h2>
+            <p class="text-content highlight-text">
+              A arquitetura de microserviços implementada permite alcançar:
+            </p>
+
+            <ul class="results-list">
+              <li><span class="check-icon">✓</span> <strong>Alta disponibilidade</strong> com replicas via Docker Swarm</li>
+              <li><span class="check-icon">✓</span> <strong>Escalabilidade horizontal</strong> independente por serviço</li>
+              <li><span class="check-icon">✓</span> <strong>Latência reduzida</strong> através de comunicação real-time SignalR</li>
+              <li><span class="check-icon">✓</span> <strong>Load balancing inteligente</strong> com sticky sessions para WebSocket</li>
+              <li><span class="check-icon">✓</span> <strong>SSL/TLS automático</strong> gerenciado pelo Traefik + Let's Encrypt</li>
+              <li><span class="check-icon">✓</span> <strong>Resiliência</strong> com retry policies e circuit breakers</li>
+              <li><span class="check-icon">✓</span> <strong>Observabilidade completa</strong> com traces distribuídos</li>
+              <li><span class="check-icon">✓</span> <strong>Deploy zero-downtime</strong> com rolling updates</li>
+              <li><span class="check-icon">✓</span> <strong>Processamento assíncrono</strong> garantido via RabbitMQ</li>
+              <li><span class="check-icon">✓</span> <strong>Cache distribuído</strong> reduzindo carga no banco de dados</li>
+            </ul>
+
+            <p class="text-content highlight-text">
+              <strong>Práticas de Engenharia:</strong>
+            </p>
+            <ul class="results-list compact">
+              <li>TDD: 75% cobertura backend, 28% frontend (28 testes xUnit)</li>
+              <li>Análise estática: SonarCloud (Grade A, 0 code smells)</li>
+              <li>Clean Architecture em todos os serviços</li>
+              <li>Pipeline CI/CD totalmente automatizado</li>
+              <li>Idempotência em eventos RabbitMQ</li>
+            </ul>
+          </section>
+
+          <!-- QR Codes -->
+          <section class="glass-box triple-qr-section">
+            <h2 class="section-title">ACESSO AO PROJETO</h2>
+            <div class="triple-qr-container">
+              <div class="qr-item">
+                <div class="qr-text">
+                  <p class="qr-label">Aplicação</p>
+                  <p class="qr-sublabel">location404.com.br</p>
+                </div>
+                <img src="/qr-aleatorio.png" alt="QR Code Produção" class="qr-code-medium">
+              </div>
+              <div class="qr-item">
+                <div class="qr-text">
+                  <p class="qr-label">GitHub</p>
+                  <p class="qr-sublabel">Repositório Completo</p>
+                </div>
+                <img src="/qr-aleatorio.png" alt="QR Code GitHub" class="qr-code-medium">
+              </div>
+              <div class="qr-item">
+                <div class="qr-text">
+                  <p class="qr-label">Grafana</p>
+                  <p class="qr-sublabel">Observabilidade (LGTM)</p>
+                </div>
+                <img src="/qr-aleatorio.png" alt="QR Code Grafana" class="qr-code-medium">
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+      </main>
+
+      <!-- Footer -->
+      <footer class="footer-section">
+        <p class="student-info">Ryan Gabriel Mazzei Bromati • ryan.bromati@catolicasc.edu.br</p>
+        <p class="course-info">Bacharelado em Engenharia de Software • Católica de Santa Catarina</p>
+      </footer>
+
+    </div>
+  </div>
+</body>
+</html>
