@@ -38,7 +38,6 @@
   <text class="box-title" x="200" y="360">Jogadores</text>
   <text class="box-type" x="200" y="385">[Person]</text>
   <text class="box-desc" x="200" y="410">Usuários que jogam,</text>
-  <text class="box-desc" x="200" y="430">competem e visualizam ranking</text>
 
   <!-- External System: Google Maps API -->
   <rect class="external-box" x="850" y="150" width="250" height="120" rx="8"/>
@@ -51,14 +50,12 @@
   <rect class="external-box" x="850" y="350" width="250" height="120" rx="8"/>
   <text class="box-title" x="975" y="390">Google OAuth</text>
   <text class="box-type" x="975" y="415">[External System]</text>
-  <text class="box-desc" x="975" y="440">Autenticação social</text>
-  <text class="box-desc" x="975" y="460">com login Google</text>
+  <text class="box-desc" x="975" y="440">Autenticação com login Google</text>
 
   <!-- Arrows -->
   <!-- Jogadores → Location404 -->
   <path class="arrow" d="M 300 380 L 450 380"/>
-  <text class="arrow-label" x="375" y="370">Joga partidas, visualiza</text>
-  <text class="arrow-label" x="375" y="390">ranking e estatísticas</text>
+  <text class="arrow-label" x="375" y="370">Joga partidas</text>
 
   <!-- Location404 → Google Maps API -->
   <path class="arrow" d="M 720 330 L 870 240"/>
