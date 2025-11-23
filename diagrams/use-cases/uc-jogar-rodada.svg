@@ -104,13 +104,5 @@
   <line class="include-line" x1="860" y1="690" x2="860" y2="760"/>
   <text class="relationship-label" x="890" y="725">«include»</text>
 
-  <rect fill="none" stroke="#606060" stroke-width="1" x="50" y="900" width="400" height="80" rx="4"/>
-
-  <circle class="actor-head" cx="70" cy="925" r="8"/>
-  <line class="actor-body" x1="70" y1="933" x2="70" y2="955" stroke="#51B059" stroke-width="2"/>
-  <line class="actor-body" x1="70" y1="940" x2="60" y2="948" stroke="#51B059" stroke-width="2"/>
-  <line class="actor-body" x1="70" y1="940" x2="80" y2="948" stroke="#51B059" stroke-width="2"/>
-  <text class="legend-text" x="90" y="940">Ator (usuário do sistema)</text>
-
   <text class="subtitle" x="700" y="970" text-anchor="middle">Diagrama UML - Caso de Uso Detalhado | Location404 TCC</text>
 </svg>
