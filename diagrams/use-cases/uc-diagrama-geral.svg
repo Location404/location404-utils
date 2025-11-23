@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="900" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .bg { fill: #1a1a2e; }
+      .title { font-family: Arial, sans-serif; font-size: 28px; font-weight: bold; fill: #ffffff; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 16px; fill: #a0a0a0; }
+
+      .actor-body { fill: none; stroke: #51B059; stroke-width: 3; }
+      .actor-head { fill: #51B059; }
+      .actor-label { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #51B059; text-anchor: middle; }
+
+      .system-boundary { fill: none; stroke: #3B96E6; stroke-width: 2; stroke-dasharray: 5,5; }
+      .system-label { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #3B96E6; }
+
+      .usecase-box { fill: #3B96E6; stroke: #2a7bc4; stroke-width: 2; }
+      .usecase-label { font-family: Arial, sans-serif; font-size: 14px; fill: #ffffff; text-anchor: middle; }
+      .usecase-id { font-family: Arial, sans-serif; font-size: 11px; fill: #e0e0e0; text-anchor: middle; font-style: italic; }
+
+      .association { stroke: #a0a0a0; stroke-width: 2; fill: none; }
+      .include-line { stroke: #51B059; stroke-width: 2; fill: none; stroke-dasharray: 5,5; }
+      .extend-line { stroke: #DC382D; stroke-width: 2; fill: none; stroke-dasharray: 5,5; }
+      .relationship-label { font-family: Arial, sans-serif; font-size: 12px; fill: #d0d0d0; text-anchor: middle; font-style: italic; }
+
+      .legend-text { font-family: Arial, sans-serif; font-size: 13px; fill: #ffffff; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1200" height="900"/>
+
+  <text class="title" x="600" y="40" text-anchor="middle">Location404 - Diagrama de Casos de Uso</text>
+  <text class="subtitle" x="600" y="65" text-anchor="middle">Visão geral das funcionalidades do sistema</text>
+
+  <!-- System Boundary -->
+  <rect class="system-boundary" x="300" y="120" width="700" height="650" rx="12"/>
+  <text class="system-label" x="650" y="110">Sistema Location404</text>
+
+  <!-- Actor: Jogador -->
+  <circle class="actor-head" cx="150" cy="350" r="20"/>
+  <line class="actor-body" x1="150" y1="370" x2="150" y2="430"/>
+  <line class="actor-body" x1="150" y1="390" x2="120" y2="410"/>
+  <line class="actor-body" x1="150" y1="390" x2="180" y2="410"/>
+  <line class="actor-body" x1="150" y1="430" x2="120" y2="460"/>
+  <line class="actor-body" x1="150" y1="430" x2="180" y2="460"/>
+  <text class="actor-label" x="150" y="490">Jogador</text>
+
+  <!-- Use Cases -->
+  <!-- UC01: Jogar Partida -->
+  <ellipse class="usecase-box" cx="500" cy="200" rx="100" ry="50"/>
+  <text class="usecase-label" x="500" y="200">Jogar Partida</text>
+  <text class="usecase-id" x="500" y="216">(UC01)</text>
+
+  <!-- UC02: Autenticar Usuário -->
+  <ellipse class="usecase-box" cx="800" cy="200" rx="110" ry="50"/>
+  <text class="usecase-label" x="800" y="200">Autenticar Usuário</text>
+  <text class="usecase-id" x="800" y="216">(UC02)</text>
+
+  <!-- UC03: Gerenciar Perfil -->
+  <ellipse class="usecase-box" cx="500" cy="320" rx="100" ry="50"/>
+  <text class="usecase-label" x="500" y="320">Gerenciar Perfil</text>
+  <text class="usecase-id" x="500" y="336">(UC03)</text>
+
+  <!-- UC04: Calcular Pontuação -->
+  <ellipse class="usecase-box" cx="800" cy="320" rx="110" ry="50"/>
+  <text class="usecase-label" x="800" y="315">Calcular</text>
+  <text class="usecase-label" x="800" y="331">Pontuação</text>
+
+  <!-- UC05: Visualizar Rankings -->
+  <ellipse class="usecase-box" cx="500" cy="440" rx="110" ry="50"/>
+  <text class="usecase-label" x="500" y="435">Visualizar</text>
+  <text class="usecase-label" x="500" y="451">Rankings</text>
+  <text class="usecase-id" x="500" y="467">(UC05)</text>
+
+  <!-- UC06: Visualizar Estatísticas -->
+  <ellipse class="usecase-box" cx="500" cy="560" rx="120" ry="50"/>
+  <text class="usecase-label" x="500" y="555">Visualizar</text>
+  <text class="usecase-label" x="500" y="571">Estatísticas</text>
+  <text class="usecase-id" x="500" y="587">(UC06)</text>
+
+  <!-- UC07: Buscar Localização -->
+  <ellipse class="usecase-box" cx="800" cy="440" rx="110" ry="50"/>
+  <text class="usecase-label" x="800" y="435">Buscar</text>
+  <text class="usecase-label" x="800" y="451">Localização</text>
+
+  <!-- UC08: Matchmaking -->
+  <ellipse class="usecase-box" cx="800" cy="560" rx="100" ry="50"/>
+  <text class="usecase-label" x="800" y="560">Matchmaking</text>
+
+  <!-- Associations (Jogador → Use Cases) -->
+  <line class="association" x1="180" y1="370" x2="410" y2="210"/>
+  <line class="association" x1="180" y1="380" x2="410" y2="310"/>
+  <line class="association" x1="180" y1="400" x2="410" y2="430"/>
+  <line class="association" x1="180" y1="420" x2="410" y2="550"/>
+  <line class="association" x1="180" y1="390" x2="710" y2="220"/>
+
+  <!-- Include relationships -->
+  <line class="include-line" x1="590" y1="210" x2="700" y2="215"/>
+  <text class="relationship-label" x="645" y="205">«include»</text>
+
+  <line class="include-line" x1="590" y1="220" x2="710" y2="410"/>
+  <text class="relationship-label" x="660" y="305">«include»</text>
+
+  <line class="include-line" x1="590" y1="190" x2="710" y2="430"/>
+  <text class="relationship-label" x="660" y="295">«include»</text>
+
+  <line class="include-line" x1="590" y1="235" x2="710" y2="545"/>
+  <text class="relationship-label" x="660" y="375">«include»</text>
+
+  <!-- Legend -->
+  <rect fill="none" stroke="#606060" stroke-width="1" x="50" y="790" width="300" height="80" rx="4"/>
+
+  <circle class="actor-head" cx="70" cy="815" r="8"/>
+  <line class="actor-body" x1="70" y1="823" x2="70" y2="845" stroke="#51B059" stroke-width="2"/>
+  <line class="actor-body" x1="70" y1="830" x2="60" y2="838" stroke="#51B059" stroke-width="2"/>
+  <line class="actor-body" x1="70" y1="830" x2="80" y2="838" stroke="#51B059" stroke-width="2"/>
+  <text class="legend-text" x="90" y="830">Ator (usuário do sistema)</text>
+
+  <ellipse fill="#3B96E6" stroke="#2a7bc4" stroke-width="1" cx="70" cy="855" rx="30" ry="15"/>
+  <text class="legend-text" x="110" y="860">Caso de Uso (funcionalidade)</text>
+
+  <!-- Metadata -->
+  <text class="subtitle" x="600" y="870" text-anchor="middle">Diagrama UML - Casos de Uso | Location404 TCC</text>
+</svg>
