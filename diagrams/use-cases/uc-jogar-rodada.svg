@@ -112,8 +112,5 @@
   <line class="actor-body" x1="70" y1="940" x2="80" y2="948" stroke="#51B059" stroke-width="2"/>
   <text class="legend-text" x="90" y="940">Ator (usuário do sistema)</text>
 
-  <ellipse fill="#3B96E6" stroke="#2a7bc4" stroke-width="1" cx="70" cy="965" rx="30" ry="15"/>
-  <text class="legend-text" x="110" y="970">Caso de Uso (funcionalidade)</text>
-
   <text class="subtitle" x="700" y="970" text-anchor="middle">Diagrama UML - Caso de Uso Detalhado | Location404 TCC</text>
 </svg>
