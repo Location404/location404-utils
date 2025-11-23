@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1400" height="1000" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .bg { fill: #1a1a2e; }
+      .title { font-family: Arial, sans-serif; font-size: 28px; font-weight: bold; fill: #ffffff; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 16px; fill: #a0a0a0; }
+
+      .actor-body { fill: none; stroke: #51B059; stroke-width: 3; }
+      .actor-head { fill: #51B059; }
+      .actor-label { font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; fill: #51B059; text-anchor: middle; }
+
+      .system-boundary { fill: none; stroke: #3B96E6; stroke-width: 2; stroke-dasharray: 5,5; }
+      .system-label { font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; fill: #3B96E6; }
+
+      .usecase-box { fill: #3B96E6; stroke: #2a7bc4; stroke-width: 2; }
+      .usecase-label { font-family: Arial, sans-serif; font-size: 14px; fill: #ffffff; text-anchor: middle; }
+      .usecase-id { font-family: Arial, sans-serif; font-size: 11px; fill: #e0e0e0; text-anchor: middle; font-style: italic; }
+
+      .association { stroke: #a0a0a0; stroke-width: 2; fill: none; }
+      .include-line { stroke: #51B059; stroke-width: 2; fill: none; stroke-dasharray: 5,5; }
+      .extend-line { stroke: #DC382D; stroke-width: 2; fill: none; stroke-dasharray: 5,5; }
+      .relationship-label { font-family: Arial, sans-serif; font-size: 12px; fill: #d0d0d0; text-anchor: middle; font-style: italic; }
+
+      .legend-text { font-family: Arial, sans-serif; font-size: 13px; fill: #ffffff; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1400" height="1000"/>
+
+  <text class="title" x="700" y="40" text-anchor="middle">UC01 - Jogar Rodada</text>
+  <text class="subtitle" x="700" y="65" text-anchor="middle">Fluxo detalhado de uma rodada completa no Location404</text>
+
+  <rect class="system-boundary" x="350" y="150" width="900" height="750" rx="12"/>
+  <text class="system-label" x="800" y="140">Sistema Location404</text>
+
+  <circle class="actor-head" cx="150" cy="400" r="20"/>
+  <line class="actor-body" x1="150" y1="420" x2="150" y2="480"/>
+  <line class="actor-body" x1="150" y1="440" x2="120" y2="460"/>
+  <line class="actor-body" x1="150" y1="440" x2="180" y2="460"/>
+  <line class="actor-body" x1="150" y1="480" x2="120" y2="510"/>
+  <line class="actor-body" x1="150" y1="480" x2="180" y2="510"/>
+  <text class="actor-label" x="150" y="540">Jogador</text>
+
+  <ellipse class="usecase-box" cx="600" cy="250" rx="120" ry="50"/>
+  <text class="usecase-label" x="600" y="250">Jogar Rodada</text>
+  <text class="usecase-id" x="600" y="266">(UC01)</text>
+
+  <ellipse class="usecase-box" cx="950" cy="250" rx="130" ry="50"/>
+  <text class="usecase-label" x="950" y="245">Entrar em Fila</text>
+  <text class="usecase-label" x="950" y="261">de Matchmaking</text>
+
+  <ellipse class="usecase-box" cx="950" cy="380" rx="120" ry="50"/>
+  <text class="usecase-label" x="950" y="375">Carregar</text>
+  <text class="usecase-label" x="950" y="391">Localização</text>
+
+  <ellipse class="usecase-box" cx="600" cy="450" rx="130" ry="50"/>
+  <text class="usecase-label" x="600" y="445">Visualizar</text>
+  <text class="usecase-label" x="600" y="461">Street View</text>
+
+  <ellipse class="usecase-box" cx="600" cy="580" rx="120" ry="50"/>
+  <text class="usecase-label" x="600" y="575">Submeter</text>
+  <text class="usecase-label" x="600" y="591">Palpite</text>
+
+  <ellipse class="usecase-box" cx="950" cy="520" rx="120" ry="50"/>
+  <text class="usecase-label" x="950" y="515">Calcular</text>
+  <text class="usecase-label" x="950" y="531">Pontuação</text>
+
+  <ellipse class="usecase-box" cx="600" cy="720" rx="130" ry="50"/>
+  <text class="usecase-label" x="600" y="715">Visualizar</text>
+  <text class="usecase-label" x="600" y="731">Resultado</text>
+
+  <ellipse class="usecase-box" cx="950" cy="660" rx="140" ry="50"/>
+  <text class="usecase-label" x="950" y="655">Atualizar</text>
+  <text class="usecase-label" x="950" y="671">Estatísticas</text>
+
+  <ellipse class="usecase-box" cx="950" cy="800" rx="120" ry="50"/>
+  <text class="usecase-label" x="950" y="795">Persistir</text>
+  <text class="usecase-label" x="950" y="811">Partida</text>
+
+  <line class="association" x1="180" y1="420" x2="490" y2="270"/>
+
+  <line class="include-line" x1="710" y1="245" x2="830" y2="250"/>
+  <text class="relationship-label" x="770" y="235">«include»</text>
+
+  <line class="include-line" x1="690" y1="285" x2="860" y2="360"/>
+  <text class="relationship-label" x="785" y="315">«include»</text>
+
+  <line class="include-line" x1="600" y1="300" x2="600" y2="400"/>
+  <text class="relationship-label" x="630" y="350">«include»</text>
+
+  <line class="include-line" x1="600" y1="500" x2="600" y2="530"/>
+  <text class="relationship-label" x="630" y="515">«include»</text>
+
+  <line class="include-line" x1="710" y1="595" x2="840" y2="535"/>
+  <text class="relationship-label" x="785" y="555">«include»</text>
+
+  <line class="include-line" x1="600" y1="630" x2="600" y2="670"/>
+  <text class="relationship-label" x="630" y="650">«include»</text>
+
+  <line class="include-line" x1="720" y1="730" x2="820" y2="675"/>
+  <text class="relationship-label" x="780" y="695">«include»</text>
+
+  <line class="include-line" x1="860" y1="690" x2="860" y2="760"/>
+  <text class="relationship-label" x="890" y="725">«include»</text>
+
+  <rect fill="none" stroke="#606060" stroke-width="1" x="50" y="900" width="400" height="80" rx="4"/>
+
+  <circle class="actor-head" cx="70" cy="925" r="8"/>
+  <line class="actor-body" x1="70" y1="933" x2="70" y2="955" stroke="#51B059" stroke-width="2"/>
+  <line class="actor-body" x1="70" y1="940" x2="60" y2="948" stroke="#51B059" stroke-width="2"/>
+  <line class="actor-body" x1="70" y1="940" x2="80" y2="948" stroke="#51B059" stroke-width="2"/>
+  <text class="legend-text" x="90" y="940">Ator (usuário do sistema)</text>
+
+  <ellipse fill="#3B96E6" stroke="#2a7bc4" stroke-width="1" cx="70" cy="965" rx="30" ry="15"/>
+  <text class="legend-text" x="110" y="970">Caso de Uso (funcionalidade)</text>
+
+  <text class="subtitle" x="700" y="970" text-anchor="middle">Diagrama UML - Caso de Uso Detalhado | Location404 TCC</text>
+</svg>
