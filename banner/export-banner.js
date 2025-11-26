@@ -28,7 +28,7 @@ async function exportBanner() {
   });
 
   // Load from Vite dev server (must be running!)
-  const url = 'http://localhost:3002';
+  const url = 'http://localhost:3001';
   console.log(`📄 Carregando: ${url}`);
   console.log('⚠️  Certifique-se de que o servidor Vite está rodando (npm run dev)');
 
